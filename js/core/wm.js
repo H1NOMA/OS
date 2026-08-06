@@ -498,7 +498,8 @@
     bg.id = 'mission';
     bg.innerHTML = `<div class="ms-title">Просмотр задач — кликните окно, Esc — выход</div>`;
     bg.addEventListener('click', (e) => { if (e.target === bg || e.target.classList.contains('ms-title')) missionExit(null); });
-    document.body.appendChild(bg);
+    // внутрь #os: иначе окна (внутри stacking context #os) не поднимутся над оверлеем
+    (document.getElementById('os') || document.body).appendChild(bg);
 
     const a = workArea();
     const n = wins.length;

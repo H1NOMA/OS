@@ -5,6 +5,11 @@
 
 ![Рабочий стол](docs/screenshots/desktop.png)
 
+| | |
+|---|---|
+| ![Терминал](docs/screenshots/terminal.png) | ![Mission Control](docs/screenshots/mission-control.png) |
+| ![Launchpad](docs/screenshots/launchpad.png) | ![Светлая тема](docs/screenshots/light-theme.png) |
+
 ## Запуск
 
 Вариант 1 — просто открой `index.html` в браузере (Chrome/Edge/любой Chromium — рекомендуется).
