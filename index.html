@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hinomaOS</title>
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M 50 6 L 88 28 L 88 72 L 50 94 L 12 72 L 12 28 Z" fill="none" stroke="%230A84FF" stroke-width="8" stroke-linejoin="round"/><path d="M 36 68 L 36 32 M 64 68 L 64 32 M 36 50 L 64 50" stroke="%230A84FF" stroke-width="8" stroke-linecap="round" fill="none"/></svg>'>
+  <link rel="stylesheet" href="css/system.css">
+</head>
+<body>
+  <div id="os">
+    <div id="wallpaper"></div>
+    <div id="menubar"></div>
+    <div id="desktop"></div>
+    <div id="rubber"></div>
+    <div id="windows"></div>
+    <div id="snap-preview"></div>
+    <div id="dock-zone"><div id="dock"></div></div>
+    <div id="toasts"></div>
+  </div>
+
+  <div id="nightlight-overlay"></div>
+  <div id="brightness-overlay"></div>
+
+  <div id="lock" class="hidden"></div>
+  <div id="boot">
+    <div class="boot-logo" style="color:#fff">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 50 6 L 88 28 L 88 72 L 50 94 L 12 72 L 12 28 Z" fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M 36 68 L 36 32 M 64 68 L 64 32 M 36 50 L 64 50" stroke="currentColor" stroke-width="6" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="boot-bar"><div></div></div>
+  </div>
+
+  <!-- ядро -->
+  <script src="js/core/kernel.js"></script>
+  <script src="js/core/vfs.js"></script>
+  <script src="js/core/wallpapers.js"></script>
+  <script src="js/core/wm.js"></script>
+  <script src="js/core/menubar.js"></script>
+  <script src="js/core/dock.js"></script>
+  <script src="js/core/desktop.js"></script>
+  <script src="js/core/overlays.js"></script>
+
+  <!-- приложения -->
+  <script src="js/apps/finder.js"></script>
+  <script src="js/apps/textedit.js"></script>
+  <script src="js/apps/terminal.js"></script>
+  <script src="js/apps/calculator.js"></script>
+  <script src="js/apps/browser.js"></script>
+  <script src="js/apps/photos.js"></script>
+  <script src="js/apps/paint.js"></script>
+  <script src="js/apps/minesweeper.js"></script>
+  <script src="js/apps/taskmgr.js"></script>
+  <script src="js/apps/clock.js"></script>
+  <script src="js/apps/settings.js"></script>
+
+  <!-- запуск -->
+  <script src="js/core/boot.js"></script>
+</body>
+</html>
