@@ -1,16 +1,15 @@
 /* ============================================================
-   hinomaOS · Файлы (finder) — гибрид Finder и Проводника
+   hinomaOS · Файлы (finder) — проводник
    ============================================================ */
 (function () {
   'use strict';
 
   /* ---------- иконка приложения: лицо Finder ---------- */
   const ICON = OS.appTile(
-    { from: '#4DC9FF', to: '#1670F0' },
-    `<g fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round">
-       <path d="M -16 -22 L -16 -4"/>
-       <path d="M 16 -22 L 16 -4"/>
-       <path d="M -25 8 C -13 24 13 24 25 8"/>
+    { from: '#35E0B5', to: '#0E8FA8' },
+    `<g fill="#fff">
+       <path d="M -30 -19 C -30 -23 -27 -25 -24 -25 L -9 -25 C -6 -25 -4 -24 -2 -22 L 2 -18 L 24 -18 C 28 -18 30 -15 30 -12 L 30 -8 L -30 -8 Z" opacity=".8"/>
+       <path d="M -30 -12 C -30 -15 -27 -17 -24 -17 L 24 -17 C 28 -17 30 -14 30 -11 L 30 18 C 30 22 28 24 24 24 L -24 24 C -28 24 -30 22 -30 18 Z"/>
      </g>`
   );
 
@@ -136,9 +135,9 @@
       font-size: 13px; user-select: none; cursor: default;
     }
     .fnd-lrow:hover { background: var(--hover); }
-    .fnd-lrow.sel { background: var(--accent); color: #fff; }
+    .fnd-lrow.sel { background: var(--accent); color: var(--on-accent); }
     .fnd-lrow .fnd-dim { color: var(--text-2); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .fnd-lrow.sel .fnd-dim { color: rgba(255,255,255,.85); }
+    .fnd-lrow.sel .fnd-dim { color: inherit; opacity: .8; }
     .fnd-lname { display: flex; align-items: center; gap: 9px; min-width: 0; }
     .fnd-lname svg { width: 21px; height: 21px; flex: none; }
     .fnd-lname > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

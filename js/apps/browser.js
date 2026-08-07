@@ -4,11 +4,12 @@
   const { el, esc } = OS;
 
   const ICON = OS.appTile(
-    { from: '#67D1FF', to: '#0A84FF' },
+    { from: '#5B8CFF', to: '#7C4DE8' },
     `<g>
-      <circle cx="0" cy="0" r="30" fill="none" stroke="#fff" stroke-width="6"/>
-      <path d="M 12 -12 L 4 4 L -12 12 L -4 -4 Z" fill="#fff"/>
-      <path d="M 12 -12 L 4 4 L 0 0 Z" fill="#ff453a"/>
+      <circle cx="0" cy="0" r="19" fill="none" stroke="#fff" stroke-width="6.5"/>
+      <path d="M -19 -2 C -8 -9 8 -9 19 -2" fill="none" stroke="#fff" stroke-width="4" opacity=".65"/>
+      <ellipse cx="0" cy="2" rx="33" ry="10" fill="none" stroke="#fff" stroke-width="4.5" transform="rotate(-18)" opacity=".9"/>
+      <circle cx="26" cy="-16" r="3.4" fill="#fff"/>
     </g>`
   );
 
@@ -52,9 +53,9 @@
 
   const BOOKMARKS = [
     { name: 'Википедия', url: 'https://ru.wikipedia.org', bg: '#5c5c66', label: 'W' },
-    { name: 'Bing', url: 'https://www.bing.com', bg: '#0a84ff', label: 'b' },
-    { name: 'Карты OSM', url: 'https://www.openstreetmap.org/export/embed.html?bbox=37.35,55.55,37.85,55.92', bg: '#30d158', label: '◈' },
-    { name: 'О hinomaOS', url: 'about:hinoma', bg: '#bf5af2', label: 'h' },
+    { name: 'Bing', url: 'https://www.bing.com', bg: '#3AA6FF', label: 'b' },
+    { name: 'Карты OSM', url: 'https://www.openstreetmap.org/export/embed.html?bbox=37.35,55.55,37.85,55.92', bg: '#23D1A8', label: '◈' },
+    { name: 'О hinomaOS', url: 'about:hinoma', bg: '#8B78FF', label: 'h' },
   ];
 
   OS.registerApp({
@@ -183,7 +184,7 @@
         a.style.cssText = 'position:absolute;inset:0;overflow-y:auto;background:var(--content-bg)';
         a.innerHTML = `<div class="br-about">
           <h1><span class="lg">${OS.icons.logo}</span> hinomaOS ${esc(OS.VERSION)} «${esc(OS.CODENAME)}»</h1>
-          <p><span class="tag">macOS-эстетика</span><span class="tag">Windows-функциональность</span><span class="tag">0 зависимостей</span></p>
+          <p><span class="tag">свой визуал</span><span class="tag">привычная логика</span><span class="tag">0 зависимостей</span></p>
           <p>Персональная операционная система в браузере. Оконный менеджер со снэпом,
           виртуальная файловая система, Spotlight, Mission Control, док с магнификацией —
           всё написано на чистом JavaScript без единого фреймворка.</p>

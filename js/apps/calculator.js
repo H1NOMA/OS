@@ -1,31 +1,31 @@
-/* hinomaOS · Калькулятор — в стиле macOS */
+/* hinomaOS · Калькулятор */
 (function () {
   'use strict';
   const { el } = OS;
 
   const ICON = OS.appTile(
-    { from: '#5A5A5F', to: '#2C2C2E' },
-    `<g>
-      <rect x="-26" y="-34" width="52" height="68" rx="8" fill="rgba(255,255,255,.14)"/>
-      <rect x="-20" y="-28" width="40" height="14" rx="3" fill="#c8f7d0"/>
-      <circle cx="-12" cy="-2" r="5" fill="#fff"/><circle cx="1" cy="-2" r="5" fill="#fff"/><circle cx="14" cy="-2" r="5" fill="#ff9f0a"/>
-      <circle cx="-12" cy="12" r="5" fill="#fff"/><circle cx="1" cy="12" r="5" fill="#fff"/><circle cx="14" cy="12" r="5" fill="#ff9f0a"/>
-      <circle cx="-12" cy="26" r="5" fill="#fff"/><circle cx="1" cy="26" r="5" fill="#fff"/><circle cx="14" cy="26" r="5" fill="#ff9f0a"/>
-    </g>`
+    { from: '#4A4E5E', to: '#20222C' },
+    `<g stroke="#fff" stroke-width="6.5" stroke-linecap="round">
+      <path d="M -17 -25 L -17 -9 M -25 -17 L -9 -17"/>
+      <path d="M 9 -17 L 25 -17"/>
+      <path d="M -24 10 L -10 24 M -10 10 L -24 24"/>
+      <path d="M 9 17 L 25 17"/>
+    </g>
+    <circle cx="17" cy="8" r="3" fill="#fff"/><circle cx="17" cy="26" r="3" fill="#fff"/>`
   );
 
   OS.injectStyle('app-calculator', `
-    .calc-root { flex:1; min-height:0; display:flex; flex-direction:column; background:#1c1c1e; outline:none; }
+    .calc-root { flex:1; min-height:0; display:flex; flex-direction:column; background:#171922; outline:none; }
     .calc-display { flex:1; min-height:64px; display:flex; align-items:flex-end; justify-content:flex-end;
-      padding: 8px 20px 4px; color:#fff; font-weight:300; overflow:hidden; white-space:nowrap; user-select:text; }
-    .calc-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:9px; padding:12px; }
-    .calc-btn { aspect-ratio:1; border:none; border-radius:50%; font-size:22px; font-family:var(--font);
-      color:#fff; background:#505054; cursor:default; transition: filter .08s, transform .08s; font-weight:500; }
-    .calc-btn:active { filter:brightness(1.35); transform:scale(.96); }
-    .calc-btn.fn { background:#a5a5a8; color:#1c1c1e; }
-    .calc-btn.op { background:#ff9f0a; font-size:26px; }
-    .calc-btn.op.hot { background:#fff; color:#ff9f0a; }
-    .calc-btn.zero { aspect-ratio:auto; grid-column:span 2; border-radius:999px; text-align:left; padding-left:26px; }
+      padding: 8px 20px 4px; color:#f2f3fa; font-weight:300; overflow:hidden; white-space:nowrap; user-select:text; }
+    .calc-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; padding:12px; }
+    .calc-btn { aspect-ratio:1; border:none; border-radius:16px; font-size:21px; font-family:var(--font);
+      color:#f2f3fa; background:#2c2f3d; cursor:default; transition: filter .08s, transform .08s; font-weight:600; }
+    .calc-btn:active { filter:brightness(1.35); transform:scale(.95); }
+    .calc-btn.fn { background:#454a5c; color:#d9dce8; }
+    .calc-btn.op { background:var(--accent); color:var(--on-accent); font-size:25px; }
+    .calc-btn.op.hot { background:#f2f3fa; color:#171922; }
+    .calc-btn.zero { aspect-ratio:auto; grid-column:span 2; text-align:left; padding-left:26px; }
   `);
 
   const fmt = (n) => {

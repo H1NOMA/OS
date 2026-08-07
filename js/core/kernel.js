@@ -71,8 +71,8 @@
   const DEFAULT_SETTINGS = {
     userName: 'h1noma',
     theme: 'dark',              // 'light' | 'dark' | 'auto'
-    accent: '#0A84FF',
-    wallpaper: 'sequoia',       // id из OS.wallpapers либо data:-URI
+    accent: '#23D1A8',          // «Мята» — фирменный акцент
+    wallpaper: 'nebula',        // id из OS.wallpapers либо data:-URI
     dockSize: 56,
     dockMagnify: true,
     nightLight: false,
@@ -90,6 +90,13 @@
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (raw) settings = { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
   } catch (e) { console.warn('[OS] настройки повреждены, сброс', e); }
+
+  // миграция со старой айдентики (v1.0)
+  const WALLPAPER_IDS = ['nebula', 'mint', 'dune', 'aurora', 'abyss', 'ember', 'dawn', 'fern'];
+  if (settings.accent === '#0A84FF') settings.accent = DEFAULT_SETTINGS.accent;
+  if (!String(settings.wallpaper).startsWith('data:') && !WALLPAPER_IDS.includes(settings.wallpaper)) {
+    settings.wallpaper = DEFAULT_SETTINGS.wallpaper;
+  }
 
   const saveSettings = debounce(() => {
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) { console.warn('[OS] не удалось сохранить настройки', e); }
@@ -115,7 +122,41 @@
   /* ---------- применение темы / внешнего вида ---------- */
   function hexToRgb(hex) {
     const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : [10, 132, 255];
+    return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : [35, 209, 168];
+  }
+  const rgbToHex = (r, g, b) => '#' + [r, g, b].map(v => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0')).join('');
+  // сдвиг тона: из одного акцента рождается парный цвет для фирменного градиента
+  function rotateHue(rgb, deg) {
+    let [r, g, b] = rgb.map(v => v / 255);
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s;
+    const l = (max + min) / 2;
+    if (max === min) { h = 0; s = 0; }
+    else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h /= 6;
+    }
+    h = (h + deg / 360 + 1) % 1;
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    let r2, g2, b2;
+    if (s === 0) { r2 = g2 = b2 = l; }
+    else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r2 = hue2rgb(p, q, h + 1 / 3); g2 = hue2rgb(p, q, h); b2 = hue2rgb(p, q, h - 1 / 3);
+    }
+    return [r2 * 255, g2 * 255, b2 * 255];
   }
   function applyTheme() {
     const t = settings.theme === 'auto'
@@ -125,9 +166,17 @@
     emit('theme:applied', t);
   }
   function applyAccent() {
-    const [r, g, b] = hexToRgb(settings.accent);
-    document.documentElement.style.setProperty('--accent', settings.accent);
-    document.documentElement.style.setProperty('--accent-soft', `rgba(${r}, ${g}, ${b}, .22)`);
+    const rgb = hexToRgb(settings.accent);
+    const [r, g, b] = rgb;
+    const accent2 = rgbToHex(...rotateHue(rgb, 52));
+    // на светлом акценте — тёмный текст, на тёмном — белый
+    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    const on = lum > 0.56 ? '#0f1417' : '#ffffff';
+    const st = document.documentElement.style;
+    st.setProperty('--accent', settings.accent);
+    st.setProperty('--accent-2', accent2);
+    st.setProperty('--accent-soft', `rgba(${r}, ${g}, ${b}, .20)`);
+    st.setProperty('--on-accent', on);
   }
   function applyBrightness() {
     const o = $('#brightness-overlay');
@@ -230,17 +279,40 @@
   }
 
   /* ---------- иконки ---------- */
-  // Сквиркл-плитка приложения: фон-градиент + белый глиф
+  // Фирменная плитка приложения hinomaOS — скруглённый шестиугольник
+  // (перекликается с гексагоном-логотипом), диагональный градиент + глиф.
+  function roundedHexPath(cornerR) {
+    const V = [[98, 50], [74, 95], [26, 95], [2, 50], [26, 5], [74, 5]];
+    const segs = V.map((C, i) => {
+      const P = V[(i + 5) % 6], N = V[(i + 1) % 6];
+      const d1 = [C[0] - P[0], C[1] - P[1]], l1 = Math.hypot(d1[0], d1[1]);
+      const d2 = [N[0] - C[0], N[1] - C[1]], l2 = Math.hypot(d2[0], d2[1]);
+      return {
+        a: [C[0] - d1[0] / l1 * cornerR, C[1] - d1[1] / l1 * cornerR],
+        C,
+        b: [C[0] + d2[0] / l2 * cornerR, C[1] + d2[1] / l2 * cornerR],
+      };
+    });
+    let d = `M ${segs[0].a[0].toFixed(1)} ${segs[0].a[1].toFixed(1)} `;
+    for (let i = 0; i < 6; i++) {
+      const cur = segs[i], nxt = segs[(i + 1) % 6];
+      d += `Q ${cur.C[0]} ${cur.C[1]} ${cur.b[0].toFixed(1)} ${cur.b[1].toFixed(1)} L ${nxt.a[0].toFixed(1)} ${nxt.a[1].toFixed(1)} `;
+    }
+    return d + 'Z';
+  }
+  const HEX_TILE = roundedHexPath(15);
+
   function appTile(bg, glyphSvg, opts) {
     const o = opts || {};
     const gid = uid('g');
     return `<svg class="app-tile" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <defs>${bg.defs ? bg.defs(gid) : `<linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+      <defs>${bg.defs ? bg.defs(gid) : `<linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stop-color="${bg.from}"/><stop offset="1" stop-color="${bg.to}"/>
-      </linearGradient>`}</defs>
-      <path d="M 50 2 C 12 2 2 12 2 50 C 2 88 12 98 50 98 C 88 98 98 88 98 50 C 98 12 88 2 50 2 Z" fill="url(#${gid})"/>
-      ${o.noGloss ? '' : `<path d="M 50 2 C 12 2 2 12 2 50 L 98 50 C 98 12 88 2 50 2 Z" fill="rgba(255,255,255,.09)"/>`}
-      <g transform="translate(50 50)">${glyphSvg}</g>
+      </linearGradient>`}<clipPath id="${gid}c"><path d="${HEX_TILE}"/></clipPath></defs>
+      <path d="${HEX_TILE}" fill="url(#${gid})"/>
+      ${o.noGloss ? '' : `<g clip-path="url(#${gid}c)"><ellipse cx="30" cy="0" rx="70" ry="36" fill="rgba(255,255,255,.14)"/></g>`}
+      <path d="${HEX_TILE}" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1.6"/>
+      <g transform="translate(50 50) scale(.86)">${glyphSvg}</g>
     </svg>`;
   }
 
@@ -249,12 +321,12 @@
 
   const ICONS = {
     logo: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 50 6 L 88 28 L 88 72 L 50 94 L 12 72 L 12 28 Z" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"/><path d="M 36 68 L 36 32 M 64 68 L 64 32 M 36 50 L 64 50" stroke="currentColor" stroke-width="7" stroke-linecap="round" fill="none"/></svg>`,
-    folder: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fldA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6FC3FF"/><stop offset="1" stop-color="#2E9BF0"/></linearGradient><linearGradient id="fldB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9AD8FF"/><stop offset="1" stop-color="#54AEF5"/></linearGradient></defs><path d="M 8 24 C 8 20 11 17 15 17 L 36 17 C 39 17 41 18 43 20 L 48 25 L 85 25 C 89 25 92 28 92 32 L 92 78 C 92 82 89 85 85 85 L 15 85 C 11 85 8 82 8 78 Z" fill="url(#fldA)"/><path d="M 8 36 C 8 32 11 29 15 29 L 85 29 C 89 29 92 32 92 36 L 92 78 C 92 82 89 85 85 85 L 15 85 C 11 85 8 82 8 78 Z" fill="url(#fldB)"/></svg>`,
+    folder: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fldA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2FC9A8"/><stop offset="1" stop-color="#0F9487"/></linearGradient><linearGradient id="fldB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5FE3C0"/><stop offset="1" stop-color="#1FB3A0"/></linearGradient></defs><path d="M 8 24 C 8 20 11 17 15 17 L 36 17 C 39 17 41 18 43 20 L 48 25 L 85 25 C 89 25 92 28 92 32 L 92 78 C 92 82 89 85 85 85 L 15 85 C 11 85 8 82 8 78 Z" fill="url(#fldA)"/><path d="M 8 36 C 8 32 11 29 15 29 L 85 29 C 89 29 92 32 92 36 L 92 78 C 92 82 89 85 85 85 L 15 85 C 11 85 8 82 8 78 Z" fill="url(#fldB)"/></svg>`,
     trashEmpty: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="trA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8E8EE"/><stop offset="1" stop-color="#B9B9C4"/></linearGradient></defs><path d="M 30 30 L 34 88 C 34 91 37 93 40 93 L 60 93 C 63 93 66 91 66 88 L 70 30 Z" fill="url(#trA)"/><path d="M 30 30 L 34 88 C 34 91 37 93 40 93 L 60 93 C 63 93 66 91 66 88 L 70 30 Z" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="1.5"/><rect x="24" y="22" width="52" height="8" rx="4" fill="#CFCFD8"/><path d="M 42 22 C 42 16 46 13 50 13 C 54 13 58 16 58 22" fill="none" stroke="#CFCFD8" stroke-width="6" stroke-linecap="round"/><path d="M 42 38 L 44 84 M 50 38 L 50 84 M 58 38 L 56 84" stroke="rgba(0,0,0,.15)" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg>`,
     trashFull: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="trB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8E8EE"/><stop offset="1" stop-color="#B9B9C4"/></linearGradient></defs><path d="M 32 20 L 42 8 L 52 16 L 62 6 L 68 18 L 56 24 L 44 22 Z" fill="#fff" opacity=".92"/><path d="M 30 30 L 34 88 C 34 91 37 93 40 93 L 60 93 C 63 93 66 91 66 88 L 70 30 Z" fill="url(#trB)"/><path d="M 30 30 L 34 88 C 34 91 37 93 40 93 L 60 93 C 63 93 66 91 66 88 L 70 30 Z" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="1.5"/><rect x="24" y="22" width="52" height="8" rx="4" fill="#CFCFD8"/><path d="M 42 38 L 44 84 M 50 38 L 50 84 M 58 38 L 56 84" stroke="rgba(0,0,0,.15)" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg>`,
     fileGeneric: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E3E3EA"/></linearGradient></defs><path d="M 22 10 C 22 7 24 5 27 5 L 62 5 L 78 21 L 78 90 C 78 93 76 95 73 95 L 27 95 C 24 95 22 93 22 90 Z" fill="url(#fgA)" stroke="rgba(0,0,0,.14)" stroke-width="1.5"/><path d="M 62 5 L 62 18 C 62 20 63 21 65 21 L 78 21 Z" fill="#C9C9D4"/></svg>`,
     fileText: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ftA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E3E3EA"/></linearGradient></defs><path d="M 22 10 C 22 7 24 5 27 5 L 62 5 L 78 21 L 78 90 C 78 93 76 95 73 95 L 27 95 C 24 95 22 93 22 90 Z" fill="url(#ftA)" stroke="rgba(0,0,0,.14)" stroke-width="1.5"/><path d="M 62 5 L 62 18 C 62 20 63 21 65 21 L 78 21 Z" fill="#C9C9D4"/><path d="M 32 38 L 68 38 M 32 50 L 68 50 M 32 62 L 68 62 M 32 74 L 54 74" stroke="#8E8E99" stroke-width="4" stroke-linecap="round"/></svg>`,
-    fileImage: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fiA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E3E3EA"/></linearGradient><linearGradient id="fiB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6EC8FA"/><stop offset="1" stop-color="#3E7BFA"/></linearGradient></defs><path d="M 22 10 C 22 7 24 5 27 5 L 62 5 L 78 21 L 78 90 C 78 93 76 95 73 95 L 27 95 C 24 95 22 93 22 90 Z" fill="url(#fiA)" stroke="rgba(0,0,0,.14)" stroke-width="1.5"/><path d="M 62 5 L 62 18 C 62 20 63 21 65 21 L 78 21 Z" fill="#C9C9D4"/><rect x="30" y="36" width="40" height="34" rx="4" fill="url(#fiB)"/><circle cx="41" cy="47" r="4.5" fill="#FFE066"/><path d="M 30 62 L 44 52 L 54 60 L 62 54 L 70 61 L 70 66 C 70 68 68 70 66 70 L 34 70 C 32 70 30 68 30 66 Z" fill="#2ECC71"/></svg>`,
+    fileImage: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fiA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E3E3EA"/></linearGradient><linearGradient id="fiB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9C86FF"/><stop offset="1" stop-color="#6C56E8"/></linearGradient></defs><path d="M 22 10 C 22 7 24 5 27 5 L 62 5 L 78 21 L 78 90 C 78 93 76 95 73 95 L 27 95 C 24 95 22 93 22 90 Z" fill="url(#fiA)" stroke="rgba(0,0,0,.14)" stroke-width="1.5"/><path d="M 62 5 L 62 18 C 62 20 63 21 65 21 L 78 21 Z" fill="#C9C9D4"/><rect x="30" y="36" width="40" height="34" rx="4" fill="url(#fiB)"/><circle cx="41" cy="47" r="4.5" fill="#FFB454"/><path d="M 30 62 L 44 52 L 54 60 L 62 54 L 70 61 L 70 66 C 70 68 68 70 66 70 L 34 70 C 32 70 30 68 30 66 Z" fill="#23D1A8"/></svg>`,
     search: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="44" cy="44" r="26" fill="none" stroke="currentColor" stroke-width="9"/><path d="M 64 64 L 84 84" stroke="currentColor" stroke-width="10" stroke-linecap="round"/></svg>`,
     power: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 50 12 L 50 48" stroke="currentColor" stroke-width="9" stroke-linecap="round"/><path d="M 30 26 A 32 32 0 1 0 70 26" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/></svg>`,
     wifi: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 14 40 C 34 22 66 22 86 40" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/><path d="M 27 56 C 40 45 60 45 73 56" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/><path d="M 40 71 C 46 66 54 66 60 71" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/><circle cx="50" cy="84" r="7" fill="currentColor"/></svg>`,

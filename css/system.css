@@ -1,6 +1,6 @@
 /* ============================================================
    hinomaOS — системная дизайн-система
-   macOS-эстетика · Windows-функциональность
+   Свой визуал · привычная логика настольных систем
    ============================================================ */
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -10,78 +10,82 @@
           "Segoe UI Variable", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, Menlo, monospace;
 
-  --accent: #0A84FF;
-  --accent-soft: rgba(10, 132, 255, .18);
+  /* фирменные акценты: «мята» + парный тон (JS выставляет из настроек) */
+  --accent: #23D1A8;
+  --accent-2: #7C8BFF;
+  --accent-soft: rgba(35, 209, 168, .20);
+  --on-accent: #0f1417;
 
   --menubar-h: 30px;
   --dock-zone-h: 86px;
 
-  --r-win: 12px;
-  --r-panel: 16px;
-  --r-ctl: 7px;
+  --r-win: 14px;
+  --r-panel: 18px;
+  --r-ctl: 8px;
 
   --ease-out: cubic-bezier(.22, 1, .36, 1);
   --ease-spring: cubic-bezier(.34, 1.3, .5, 1);
 
-  /* ---- светлая тема ---- */
-  --text: #1d1d1f;
-  --text-2: rgba(29, 29, 31, .58);
-  --text-3: rgba(29, 29, 31, .35);
-  --text-inv: #f5f5f7;
+  /* ---- светлая тема: тёплая «слоновая кость», без холодного серого ---- */
+  --text: #272430;
+  --text-2: rgba(39, 36, 48, .60);
+  --text-3: rgba(39, 36, 48, .36);
+  --text-inv: #f6f4ef;
 
-  --win-bg: rgba(246, 246, 248, .92);
-  --win-bg-solid: #f6f6f8;
-  --win-border: rgba(0, 0, 0, .14);
-  --win-inner-border: rgba(255, 255, 255, .45);
-  --titlebar-bg: rgba(255, 255, 255, .18);
+  --win-bg: rgba(249, 247, 242, .92);
+  --win-bg-solid: #f9f7f2;
+  --win-border: rgba(46, 40, 34, .15);
+  --win-inner-border: rgba(255, 255, 255, .5);
+  --titlebar-bg: rgba(255, 253, 248, .2);
 
-  --sidebar-bg: rgba(238, 238, 242, .62);
-  --content-bg: #ffffff;
+  --sidebar-bg: rgba(242, 239, 231, .62);
+  --content-bg: #fffdf8;
 
-  --glass: rgba(248, 248, 250, .66);
-  --glass-strong: rgba(250, 250, 252, .82);
+  --glass: rgba(250, 248, 242, .66);
+  --glass-strong: rgba(252, 250, 245, .84);
   --glass-border: rgba(255, 255, 255, .55);
 
-  --ctl-bg: rgba(0, 0, 0, .055);
-  --ctl-bg-hover: rgba(0, 0, 0, .095);
-  --ctl-border: rgba(0, 0, 0, .1);
+  --ctl-bg: rgba(46, 40, 34, .06);
+  --ctl-bg-hover: rgba(46, 40, 34, .1);
+  --ctl-border: rgba(46, 40, 34, .11);
 
-  --hover: rgba(0, 0, 0, .06);
-  --active-row: rgba(0, 0, 0, .08);
-  --divider: rgba(0, 0, 0, .09);
+  --hover: rgba(46, 40, 34, .065);
+  --active-row: rgba(46, 40, 34, .09);
+  --divider: rgba(46, 40, 34, .1);
 
-  --shadow-win: 0 28px 80px rgba(0, 0, 0, .32), 0 4px 18px rgba(0, 0, 0, .18);
-  --shadow-win-blur: 0 16px 48px rgba(0, 0, 0, .18), 0 2px 10px rgba(0, 0, 0, .10);
-  --shadow-panel: 0 18px 60px rgba(0, 0, 0, .28), 0 2px 8px rgba(0, 0, 0, .12);
-  --shadow-menu: 0 12px 40px rgba(0, 0, 0, .22), 0 1px 4px rgba(0, 0, 0, .12);
+  --shadow-win: 0 28px 80px rgba(30, 24, 46, .32), 0 4px 18px rgba(30, 24, 46, .18);
+  --shadow-win-blur: 0 16px 48px rgba(30, 24, 46, .18), 0 2px 10px rgba(30, 24, 46, .10);
+  --shadow-panel: 0 18px 60px rgba(30, 24, 46, .28), 0 2px 8px rgba(30, 24, 46, .12);
+  --shadow-menu: 0 12px 40px rgba(30, 24, 46, .22), 0 1px 4px rgba(30, 24, 46, .12);
 }
 
 [data-theme="dark"] {
-  --text: #f5f5f7;
-  --text-2: rgba(245, 245, 247, .55);
-  --text-3: rgba(245, 245, 247, .3);
-  --text-inv: #1d1d1f;
+  /* ---- тёмная тема: глубокий «космос» с фиолетово-синим подтоном ---- */
+  --text: #edeef6;
+  --text-2: rgba(237, 238, 246, .56);
+  --text-3: rgba(237, 238, 246, .32);
+  --text-inv: #23212b;
 
-  --win-bg: rgba(38, 38, 42, .88);
-  --win-bg-solid: #262629;
-  --win-border: rgba(0, 0, 0, .55);
+  --win-bg: rgba(28, 30, 42, .89);
+  --win-bg-solid: #1c1e2a;
+  --win-border: rgba(0, 0, 5, .55);
   --win-inner-border: rgba(255, 255, 255, .12);
-  --titlebar-bg: rgba(255, 255, 255, .045);
+  --titlebar-bg: rgba(255, 255, 255, .04);
 
-  --sidebar-bg: rgba(30, 30, 34, .55);
-  --content-bg: #1e1e21;
+  --sidebar-bg: rgba(20, 22, 32, .55);
+  --content-bg: #171923;
 
-  --glass: rgba(34, 34, 38, .6);
-  --glass-strong: rgba(40, 40, 46, .82);
-  --glass-border: rgba(255, 255, 255, .14);
+  --glass: rgba(21, 23, 33, .62);
+  --glass-strong: rgba(28, 30, 43, .84);
+  --glass-border: rgba(255, 255, 255, .13);
 
-  --ctl-bg: rgba(255, 255, 255, .085);
-  --ctl-bg-hover: rgba(255, 255, 255, .14);
+  --ctl-bg: rgba(255, 255, 255, .08);
+  --ctl-bg-hover: rgba(255, 255, 255, .135);
   --ctl-border: rgba(255, 255, 255, .12);
 
   --hover: rgba(255, 255, 255, .07);
   --active-row: rgba(255, 255, 255, .1);
-  --divider: rgba(255, 255, 255, .1);
+  --divider: rgba(255, 255, 255, .09);
 
   --shadow-win: 0 30px 90px rgba(0, 0, 0, .6), 0 4px 18px rgba(0, 0, 0, .4);
   --shadow-win-blur: 0 16px 48px rgba(0, 0, 0, .4), 0 2px 10px rgba(0, 0, 0, .25);
@@ -174,7 +178,7 @@ img { -webkit-user-drag: none; }
   word-break: break-word;
 }
 .di.selected .di-icon { filter: drop-shadow(0 3px 6px rgba(0,0,0,.35)) brightness(.72); }
-.di.selected .di-label { background: var(--accent); text-shadow: none; }
+.di.selected .di-label { background: var(--accent); color: var(--on-accent); text-shadow: none; }
 .di .di-rename {
   width: 92px;
   font-size: 12.5px;
@@ -264,8 +268,8 @@ img { -webkit-user-drag: none; }
   color: var(--text);
 }
 .menu-item .mi-hotkey { margin-left: auto; color: var(--text-3); font-size: 12.5px; padding-left: 24px; }
-.menu-item:hover:not(.disabled) { background: var(--accent); color: #fff; }
-.menu-item:hover:not(.disabled) .mi-hotkey { color: rgba(255,255,255,.75); }
+.menu-item:hover:not(.disabled) { background: var(--accent); color: var(--on-accent); }
+.menu-item:hover:not(.disabled) .mi-hotkey { color: var(--on-accent); opacity: .72; }
 .menu-item.disabled { color: var(--text-3); }
 .menu-item svg { width: 15px; height: 15px; flex: none; }
 .menu-sep { height: 1px; background: var(--divider); margin: 5px 10px; }
@@ -434,23 +438,26 @@ img { -webkit-user-drag: none; }
   flex: none;
   align-items: center;
 }
+/* фирменные кнопки окна — шестиугольники, как логотип */
 .tl {
-  width: 12.5px; height: 12.5px;
-  border-radius: 50%;
+  width: 14px; height: 13px;
+  clip-path: polygon(27% 3%, 73% 3%, 97% 50%, 73% 97%, 27% 97%, 3% 50%);
   display: flex; align-items: center; justify-content: center;
-  border: .5px solid rgba(0,0,0,.15);
   cursor: default;
   position: relative;
+  transition: transform .12s var(--ease-spring);
 }
+.tl:hover { transform: scale(1.18); }
 .tl svg { width: 8px; height: 8px; opacity: 0; transition: opacity .1s; }
+.window.focused .tl svg { opacity: .4; }
 .traffic:hover .tl svg { opacity: 1; }
-.tl-close { background: #ff5f57; }
-.tl-min   { background: #febc2e; }
-.tl-max   { background: #28c840; }
-.window:not(.focused) .tl { background: rgba(128,128,128,.4); }
-.window:not(.focused) .traffic:hover .tl-close { background: #ff5f57; }
-.window:not(.focused) .traffic:hover .tl-min { background: #febc2e; }
-.window:not(.focused) .traffic:hover .tl-max { background: #28c840; }
+.tl-close { background: #FF6B5E; }
+.tl-min   { background: #FFB454; }
+.tl-max   { background: #2FD9A0; }
+.window:not(.focused) .tl { background: rgba(128,128,136,.38); }
+.window:not(.focused) .traffic:hover .tl-close { background: #FF6B5E; }
+.window:not(.focused) .traffic:hover .tl-min { background: #FFB454; }
+.window:not(.focused) .traffic:hover .tl-max { background: #2FD9A0; }
 
 .win-title {
   position: absolute;
@@ -588,7 +595,7 @@ img { -webkit-user-drag: none; }
   border-radius: 8px;
   cursor: default;
 }
-.spot-item.active { background: var(--accent); color: #fff; }
+.spot-item.active { background: var(--accent); color: var(--on-accent); }
 .spot-item .sp-icon { width: 30px; height: 30px; flex: none; }
 .spot-item .sp-icon svg { width: 100%; height: 100%; }
 .spot-item .sp-name { font-size: 14.5px; font-weight: 600; }
@@ -712,7 +719,7 @@ img { -webkit-user-drag: none; }
   color: var(--text-2);
   transition: background .2s, color .2s;
 }
-.cc-toggle-icon.on { background: var(--accent); color: #fff; }
+.cc-toggle-icon.on { background: var(--accent); color: var(--on-accent); }
 .cc-toggle-icon svg { width: 16px; height: 16px; }
 .cc-toggle-row .cc-t-name { font-weight: 600; }
 .cc-toggle-row .cc-t-state { font-size: 11.5px; color: var(--text-2); }
@@ -839,7 +846,7 @@ img { -webkit-user-drag: none; }
 .cal-grid .cal-dow { color: var(--text-3); font-weight: 700; font-size: 10.5px; padding: 3px 0; }
 .cal-grid .cal-day { padding: 5px 0; border-radius: 50%; color: var(--text); }
 .cal-grid .cal-day.other { color: var(--text-3); }
-.cal-grid .cal-day.today { background: var(--accent); color: #fff; font-weight: 700; }
+.cal-grid .cal-day.today { background: var(--accent); color: var(--on-accent); font-weight: 700; }
 .notif-head {
   display: flex; align-items: center; justify-content: space-between;
   margin: 14px 0 8px;
@@ -1009,7 +1016,7 @@ img { -webkit-user-drag: none; }
 .ui-btn:active { filter: brightness(.92); }
 .ui-btn.primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   box-shadow: none;
 }
 .ui-btn.primary:hover { filter: brightness(1.08); }
@@ -1109,7 +1116,7 @@ img { -webkit-user-drag: none; }
   cursor: default;
 }
 .ui-list-row:hover { background: var(--hover); }
-.ui-list-row.on { background: var(--accent); color: #fff; }
+.ui-list-row.on { background: var(--accent); color: var(--on-accent); }
 
 .ui-empty {
   flex: 1;
@@ -1203,7 +1210,7 @@ img { -webkit-user-drag: none; }
 #lock .lock-avatar {
   width: 74px; height: 74px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #5e5ce6);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
   display: flex; align-items: center; justify-content: center;
   font-size: 30px;
   font-weight: 800;

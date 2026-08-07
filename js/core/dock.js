@@ -1,5 +1,5 @@
 /* ============================================================
-   hinomaOS · dock — док с магнификацией, индикаторами
+   hinomaOS · dock — панель приложений с магнификацией, индикаторами
    запущенных приложений, тултипами и контекстными меню
    ============================================================ */
 (function () {
@@ -41,7 +41,7 @@
       const item = el('div', 'dock-item');
       let name, iconHtml;
       if (m.special === 'launchpad') {
-        name = 'Launchpad';
+        name = 'Приложения';
         iconHtml = OS.appTile({ from: '#8e9bb5', to: '#5a6478' }, `<g transform="translate(-50 -50) scale(0.62) translate(30 30)">${OS.icons.grid.replace(/<\/?svg[^>]*>/g, '')}</g>`.replace('currentColor', '#fff'));
         iconHtml = OS.appTile(
           { from: '#aab6cf', to: '#616c85' },

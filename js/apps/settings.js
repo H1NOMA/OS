@@ -1,4 +1,4 @@
-/* hinomaOS · Настройки — системные настройки в стиле macOS */
+/* hinomaOS · Настройки — системные настройки */
 (function () {
   'use strict';
   const { el, esc } = OS;
@@ -40,7 +40,7 @@
     .st-wp .nm { position:absolute; left:0; right:0; bottom:0; padding:10px 8px 4px; font-size:11px; color:#fff;
       background:linear-gradient(transparent, rgba(0,0,0,.6)); }
     .st-avatar { width:74px; height:74px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-      font-size:30px; font-weight:800; color:#fff; background:linear-gradient(135deg, var(--accent), #5e5ce6); flex:none; }
+      font-size:30px; font-weight:800; color:#fff; background:linear-gradient(135deg, var(--accent), var(--accent-2)); flex:none; }
     .st-pin-item { display:flex; align-items:center; gap:9px; padding:5px 8px; border-radius:8px; }
     .st-pin-item:hover { background:var(--hover); }
     .st-pin-item .ic { width:24px; height:24px; flex:none; }
@@ -51,11 +51,20 @@
     .st-storage-bar > div { height:100%; background:var(--accent); border-radius:5px; }
   `);
 
-  const ACCENTS = ['#0A84FF', '#BF5AF2', '#FF375F', '#FF453A', '#FF9F0A', '#FFD60A', '#30D158', '#8E8E93'];
+  const ACCENTS = [
+    { c: '#23D1A8', n: 'Мята' },
+    { c: '#8B78FF', n: 'Ирис' },
+    { c: '#FF6B5E', n: 'Коралл' },
+    { c: '#FFB454', n: 'Янтарь' },
+    { c: '#3AA6FF', n: 'Лазурь' },
+    { c: '#FF7DA8', n: 'Роза' },
+    { c: '#9ADB4F', n: 'Лайм' },
+    { c: '#93A0B4', n: 'Сталь' },
+  ];
   const SECTIONS = [
     { id: 'appearance', name: 'Внешний вид', ic: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3 A 9 9 0 0 1 12 21 Z" fill="currentColor"/></svg>' },
     { id: 'wallpaper', name: 'Обои', ic: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 15 L8 10 L13 15 L16 12 L21 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="16" cy="9" r="1.6" fill="currentColor"/></svg>' },
-    { id: 'dock', name: 'Док', ic: '<svg viewBox="0 0 24 24"><rect x="3" y="14" width="18" height="6" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="17" r="1.4" fill="currentColor"/><circle cx="12" cy="17" r="1.4" fill="currentColor"/><circle cx="16" cy="17" r="1.4" fill="currentColor"/></svg>' },
+    { id: 'dock', name: 'Панель', ic: '<svg viewBox="0 0 24 24"><rect x="3" y="14" width="18" height="6" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="17" r="1.4" fill="currentColor"/><circle cx="12" cy="17" r="1.4" fill="currentColor"/><circle cx="16" cy="17" r="1.4" fill="currentColor"/></svg>' },
     { id: 'user', name: 'Пользователь', ic: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4.5 20 C 5.5 15.5 8.5 14 12 14 C 15.5 14 18.5 15.5 19.5 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' },
     { id: 'notif', name: 'Уведомления', ic: '<svg viewBox="0 0 24 24"><path d="M6 16 L6 10 A 6 6 0 0 1 18 10 L 18 16 L 20 18 L 4 18 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 21 C 10.5 22 13.5 22 14 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>' },
     { id: 'about', name: 'О системе', ic: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11 L12 16.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="7.8" r="1.4" fill="currentColor"/></svg>' },
@@ -121,7 +130,7 @@
           const card2 = el('div', 'st-card');
           card2.innerHTML = `<div class="lbl" style="font-weight:700;margin-bottom:10px">Акцентный цвет</div>
             <div class="st-accents">
-              ${ACCENTS.map(c => `<div class="st-acc ${s.get('accent') === c ? 'on' : ''}" data-c="${c}" style="background:${c}"></div>`).join('')}
+              ${ACCENTS.map(a => `<div class="st-acc ${s.get('accent') === a.c ? 'on' : ''}" data-c="${a.c}" title="${a.n}" style="background:${a.c}"></div>`).join('')}
             </div>`;
           card2.querySelectorAll('[data-c]').forEach(a => a.addEventListener('click', () => {
             s.set('accent', a.dataset.c);
@@ -131,7 +140,7 @@
 
           const card3 = el('div', 'st-card');
           const row = el('div', 'st-row');
-          row.innerHTML = `<div><div class="lbl">Night Shift</div><div class="sub">Тёплый оттенок экрана вечером</div></div><div class="sp"></div>`;
+          row.innerHTML = `<div><div class="lbl">Тёплый свет</div><div class="sub">Мягкий тёплый оттенок экрана вечером</div></div><div class="sp"></div>`;
           row.appendChild(mkSwitch(s.get('nightLight'), v => s.set('nightLight', v)));
           card3.appendChild(row);
           main.appendChild(card3);

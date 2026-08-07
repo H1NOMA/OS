@@ -3,11 +3,15 @@
   'use strict';
   const { el, esc } = OS;
 
-  const petals = [0, 45, 90, 135, 180, 225, 270, 315].map((a, i) => {
-    const colors = ['#ff9f0a', '#ffd60a', '#30d158', '#64d2ff', '#0a84ff', '#bf5af2', '#ff375f', '#ff453a'];
-    return `<ellipse cx="0" cy="-17" rx="8.5" ry="17" fill="${colors[i]}" opacity=".85" transform="rotate(${a})"/>`;
-  }).join('');
-  const ICON = OS.appTile({ from: '#FBFBFD', to: '#D8D8E0' }, `<g>${petals}</g>`, { noGloss: true });
+  const ICON = OS.appTile(
+    { from: '#FF8A5C', to: '#C74882' },
+    `<g>
+      <rect x="-28" y="-22" width="42" height="32" rx="6" fill="rgba(255,255,255,.45)" transform="rotate(-9 -7 -6)"/>
+      <rect x="-18" y="-14" width="46" height="36" rx="6" fill="#fff"/>
+      <circle cx="-7" cy="-4" r="4.5" fill="#FFB454"/>
+      <path d="M -15 17 L -3 5 L 6 13 L 13 7 L 25 18 L 25 16 C 25 20 23 22 20 22 L -12 22 C -15 22 -17 20 -17 18 Z" fill="#23D1A8"/>
+    </g>`
+  );
 
   OS.injectStyle('app-photos', `
     .ph-root { flex:1; min-height:0; display:flex; flex-direction:column; }

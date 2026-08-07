@@ -65,7 +65,7 @@
 | `OS.el(tag, cls, html)`, `OS.esc(s)`, `OS.clamp(v,a,b)`, `OS.uid(p)`, `OS.debounce(fn,ms)` | Утилиты |
 | `OS.fmtBytes(n)`, `OS.fmtDate(ts)` | Форматирование |
 | `OS.beep(freq, dur)` | Звук (WebAudio) |
-| `OS.appTile(bg, glyph)` | Сквиркл-иконка приложения |
+| `OS.appTile(bg, glyph)` | Фирменная шестиугольная плитка приложения |
 | `OS.fileIcon(nodeOrStat)` | SVG-иконка файла/папки |
 | `OS.icons.*` | Системные глифы: `folder, fileText, fileImage, fileGeneric, trashEmpty, trashFull, search, power, wifi, moon, sun, grid, mission, chevronL, chevronR, warn, logo` |
 | `OS.wm.focused`, `OS.wm.all()`, `OS.wm.windowsOf(appId)`, `OS.wm.missionToggle()`, `OS.wm.workArea()` | Оконный менеджер |
@@ -92,11 +92,26 @@
 | `vfs.normalize(p)`, `vfs.parentOf(p)`, `vfs.nameOf(p)`, `vfs.join(...)` | Пути |
 | Событие `OS.on('vfs:change', ({path, action}) => …)` | Реагируй и перерисовывай списки. Отписывайся в `win.on('close')`! |
 
+## Виджеты рабочего стола `OS.widgets`
+
+```js
+OS.widgets.register({
+  id: 'w-my', name: 'Мой виджет', desc: 'Описание в галерее',
+  w: 220, h: 160, preview: '🧩',        // эмодзи для карточки галереи
+  render(body, ctx) {                    // body — HTMLElement (.wg-body, flex column)
+    // ctx.data — сохранённые данные, ctx.save(obj) — сохранить
+    return () => {};                     // опционально: dispose при удалении
+  },
+});
+// OS.widgets.add(id), OS.widgets.remove(uid), OS.widgets.openGallery()
+```
+Интерактивные элементы внутри виджета помечай `data-nodrag` (или используй input/button/select/textarea — они не перетаскивают виджет).
+
 ## Ключи настроек (используются Настройками и системой)
 
 `userName` (string), `theme` ('light'|'dark'|'auto'), `accent` (hex), `wallpaper` (id пресета или data:-URI),
 `dockSize` (44–72), `dockMagnify` (bool), `nightLight` (bool), `brightness` (0.4–1), `volume` (0–100),
-`wifi`, `bluetooth`, `dnd` (bool), `dockPinned` (string[]).
+`wifi`, `bluetooth`, `dnd` (bool), `dockPinned` (string[]), `widgets` (служебный — список виджетов).
 `OS.settings.set` сам применяет тему/акцент/яркость и шлёт `settings:change`.
 
 ## UI-кит (готовые классы из css/system.css — ИСПОЛЬЗУЙ ИХ)

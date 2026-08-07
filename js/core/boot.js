@@ -74,11 +74,12 @@
       OS.menubar.render();
       OS.dock.init();
       OS.desktop.init();
+      OS.widgets.init();
     }
     if (OS.settings.get('firstRun')) {
       OS.settings.set('firstRun', false);
       setTimeout(() => {
-        OS.notify({ title: 'Добро пожаловать! 👋', body: 'Alt+Space — поиск, F3 — все окна. Приятной работы!', appId: 'system' });
+        OS.notify({ title: 'Добро пожаловать! 👋', body: 'Alt+Space — поиск, F3 — обзор окон, ПКМ по столу — виджеты.', appId: 'system' });
       }, 900);
     }
   }

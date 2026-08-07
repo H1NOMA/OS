@@ -51,7 +51,7 @@
 
   /* ================= MENU BAR ================= */
 
-  let activeAppName = 'Finder';
+  let activeAppName = 'Рабочий стол';
   let activeAppMenus = null;
 
   function render() {
@@ -73,7 +73,7 @@
         { label: 'Диспетчер задач…', action: () => OS.launch('taskmgr') },
         { sep: true },
         { label: 'Свернуть все окна', action: () => OS.wm.minimizeOthers(null) },
-        { label: 'Просмотр задач', hotkey: 'F3', action: () => OS.wm.missionToggle() },
+        { label: 'Обзор окон', hotkey: 'F3', action: () => OS.wm.missionToggle() },
         { sep: true },
         { label: 'Заблокировать экран', hotkey: 'Ctrl+Alt+L', action: () => OS.emit('session:lock') },
         { label: 'Перезагрузить…', action: () => OS.emit('session:restart') },
@@ -106,10 +106,10 @@
     // — правая часть
     const right = [
       { id: 'mb-search', html: OS.icons.search, title: 'Поиск (Alt+Space)', click: () => OS.emit('spotlight:toggle') },
-      { id: 'mb-mission', html: OS.icons.mission, title: 'Просмотр задач (F3)', click: () => OS.wm.missionToggle() },
+      { id: 'mb-mission', html: OS.icons.mission, title: 'Обзор окон (F3)', click: () => OS.wm.missionToggle() },
       { id: 'mb-wifi', html: OS.icons.wifi, title: 'Wi-Fi', click: (e, n) => toggleQuick(n, 'wifi') },
       { id: 'mb-battery', html: `<span style="font-size:11.5px;font-weight:600;">100%</span>` + OS.icons.battery, title: 'Аккумулятор' },
-      { id: 'mb-cc', html: OS.icons.cc, title: 'Пункт управления', click: () => OS.emit('cc:toggle') },
+      { id: 'mb-cc', html: OS.icons.cc, title: 'Быстрые настройки', click: () => OS.emit('cc:toggle') },
     ];
     right.forEach(cfg => {
       const item = el('div', 'mb-item', cfg.html);
@@ -169,7 +169,7 @@
           { label: 'Прикрепить слева', hotkey: 'Ctrl+Alt+←', action: () => OS.wm.focused?.snapTo('left') },
           { label: 'Прикрепить справа', hotkey: 'Ctrl+Alt+→', action: () => OS.wm.focused?.snapTo('right') },
           { sep: true },
-          { label: 'Все окна (Просмотр задач)', hotkey: 'F3', action: () => OS.wm.missionToggle() },
+          { label: 'Все окна (Обзор)', hotkey: 'F3', action: () => OS.wm.missionToggle() },
         ],
       },
       {
@@ -185,17 +185,17 @@
   function showAbout() {
     OS.dialog.alert(
       `hinomaOS ${OS.VERSION} «${OS.CODENAME}»`,
-      `Персональная веб-ОС\n\nЭстетика macOS · функциональность Windows\nЧистый JavaScript, ноль зависимостей\n\nПамять: localStorage (${OS.fmtBytes(OS.vfs.usage())} занято)\nПользователь: ${OS.settings.get('userName')}`,
+      `Персональная веб-ОС со своим характером\nЧистый JavaScript, ноль зависимостей\n\nПамять: localStorage (${OS.fmtBytes(OS.vfs.usage())} занято)\nПользователь: ${OS.settings.get('userName')}`,
       `<div style="width:52px;height:52px;color:var(--accent)">${OS.icons.logo}</div>`
     );
   }
   function showHotkeys() {
     OS.dialog.alert('Горячие клавиши',
-      'Alt + Space — Spotlight-поиск\nAlt + Tab — переключение окон\nF3 — просмотр задач\nCtrl + Alt + ←/→/↑/↓ — снэп окна\nCtrl + W — закрыть окно\nCtrl + Alt + L — заблокировать\nF2 — переименовать файл');
+      'Alt + Space — поиск\nAlt + Tab — переключение окон\nF3 — обзор окон\nCtrl + Alt + ←/→/↑/↓ — прикрепить окно\nCtrl + W — закрыть окно\nCtrl + Alt + L — заблокировать\nF2 — переименовать файл');
   }
 
   OS.on('wm:focus', (win) => {
-    const newName = win ? win.app.name : 'Finder';
+    const newName = win ? win.app.name : 'Рабочий стол';
     const newMenus = win && win.app.menus ? win.app.menus(win) : null;
     if (newName !== activeAppName || newMenus !== activeAppMenus) {
       activeAppName = newName;
@@ -203,7 +203,7 @@
       render();
     }
   });
-  OS.on('wm:closed', () => { if (!OS.wm.focused) { activeAppName = 'Finder'; activeAppMenus = null; render(); } });
+  OS.on('wm:closed', () => { if (!OS.wm.focused) { activeAppName = 'Рабочий стол'; activeAppMenus = null; render(); } });
 
   OS.menubar = { render, showAbout, showHotkeys };
 })();

@@ -1,5 +1,5 @@
 /* ============================================================
-   hinomaOS · overlays — Spotlight, Launchpad, Пункт управления,
+   hinomaOS · overlays — поиск, экран приложений, быстрые настройки,
    уведомления (тосты + центр), календарь
    ============================================================ */
 (function () {
@@ -185,7 +185,7 @@
       </div>
       <div class="cc-module" data-t="nightlight" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
         <div class="cc-toggle-icon ${s.get('nightLight') ? 'on' : ''}" style="width:38px;height:38px;">${OS.icons.sun}</div>
-        <div class="cc-t-name" style="font-size:12px;">Night Shift</div>
+        <div class="cc-t-name" style="font-size:12px;">Тёплый свет</div>
       </div>
       <div class="cc-module cc-span2">
         <div class="cc-label">Яркость</div>
