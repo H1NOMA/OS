@@ -5372,34 +5372,47 @@ img { -webkit-user-drag: none; }
       z-index: 9450; /* над окнами/панелями/тостами, но под меню(9500) и диалогами(9800) */
       pointer-events: none;
       opacity: 0;
-      transition: opacity .45s var(--ease-out);
-      will-change: opacity, filter, transform;
+      transition: opacity .6s var(--ease-out);
+      will-change: opacity;
     }
-    #ai-aura.on { opacity: .92; animation: aura-hue 6s linear infinite, aura-breathe 3s ease-in-out infinite; }
-    /* приём «градиентная рамка через маску»: показываем только полосу у краёв */
+    #ai-aura.on { opacity: 1; }
+    /* Мягкое свечение внутрь от краёв: не рамка, а размытые цветные пятна
+       по углам и сторонам, аддитивно светящиеся поверх интерфейса — центр чистый. */
     #ai-aura::before, #ai-aura::after {
       content: "";
       position: absolute; inset: 0;
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask-composite: exclude;
+      transform-origin: center;
+      -webkit-mask: radial-gradient(130% 130% at 50% 50%, transparent 16%, #000 68%);
+              mask: radial-gradient(130% 130% at 50% 50%, transparent 16%, #000 68%);
+      will-change: transform, filter;
     }
     #ai-aura::before {
-      padding: 66px;
-      background: conic-gradient(from 0deg,
-        #ff5f6d, #ffc371, #43e97b, #38f9d7, #4facfe, #b06bff, #ff5f6d);
+      background:
+        radial-gradient(64% 64% at 0% 0%,     rgba(255,64,112,1),  transparent 82%),
+        radial-gradient(66% 66% at 100% 0%,   rgba(72,150,255,1),  transparent 82%),
+        radial-gradient(68% 68% at 100% 100%, rgba(176,84,255,1),  transparent 82%),
+        radial-gradient(66% 66% at 0% 100%,   rgba(46,224,150,1),  transparent 82%),
+        radial-gradient(85% 48% at 50% 0%,    rgba(255,184,92,.95), transparent 85%),
+        radial-gradient(48% 85% at 100% 50%,  rgba(110,132,255,.95), transparent 85%),
+        radial-gradient(85% 48% at 50% 100%,  rgba(52,235,206,.95), transparent 85%),
+        radial-gradient(48% 85% at 0% 50%,    rgba(255,104,164,.95), transparent 85%);
       filter: blur(34px);
+      animation: aura-hue1 9s linear infinite, aura-breathe1 5s ease-in-out infinite;
     }
     #ai-aura::after {
-      padding: 26px;
-      background: conic-gradient(from 140deg,
-        #b06bff, #4facfe, #38f9d7, #43e97b, #ffc371, #ff5f6d, #b06bff);
-      filter: blur(11px);
-      opacity: .82;
+      background:
+        radial-gradient(64% 64% at 0% 0%,     rgba(110,132,255,1), transparent 82%),
+        radial-gradient(66% 66% at 100% 0%,   rgba(52,235,206,1),  transparent 82%),
+        radial-gradient(68% 68% at 100% 100%, rgba(255,150,84,1),  transparent 82%),
+        radial-gradient(66% 66% at 0% 100%,   rgba(176,84,255,1),  transparent 82%);
+      filter: blur(24px);
+      opacity: .8;
+      animation: aura-hue2 13s linear infinite reverse, aura-breathe2 6.5s ease-in-out infinite;
     }
-    @keyframes aura-hue { to { filter: hue-rotate(360deg); } }
-    @keyframes aura-breathe { 50% { transform: scale(1.006); } }
+    @keyframes aura-hue1 { from { filter: blur(34px) hue-rotate(0deg); } to { filter: blur(34px) hue-rotate(360deg); } }
+    @keyframes aura-hue2 { from { filter: blur(24px) hue-rotate(0deg); } to { filter: blur(24px) hue-rotate(360deg); } }
+    @keyframes aura-breathe1 { 0%, 100% { transform: scale(1.02); } 50% { transform: scale(1.09); } }
+    @keyframes aura-breathe2 { 0%, 100% { transform: scale(1.07); } 50% { transform: scale(1.0); } }
   `);
 
   let auraEl = null;
