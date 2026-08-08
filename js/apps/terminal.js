@@ -94,7 +94,8 @@
             ['pwd', 'текущий путь'], ['cat <файл>', 'показать файл'], ['mkdir <имя>', 'создать папку'],
             ['touch <имя>', 'создать файл'], ['rm <путь>', 'удалить'], ['mv <а> <б>', 'переместить'],
             ['cp <а> <б>', 'копировать'], ['echo <текст> [> файл]', 'вывод / запись в файл'],
-            ['open <путь|app>', 'открыть файл или приложение'], ['apps', 'установленные приложения'],
+            ['open <путь|app>', 'открыть файл или приложение'], ['apps', 'список приложений'],
+            ['install [url|файл]', 'установить приложение'],
             ['theme dark|light', 'сменить тему'], ['neofetch', 'информация о системе'],
             ['history', 'история команд'], ['date', 'дата и время'], ['whoami', 'кто я'], ['clear', 'очистить экран'],
           ].map(([c, d]) => `<span class="t-accent">${c.padEnd(24)}</span><span class="t-dim">${d}</span>`).join('\n'));
@@ -150,6 +151,13 @@
         },
         apps() {
           print(OS.allApps().map(a => `<span class="t-accent">${esc(a.id.padEnd(14))}</span>${esc(a.name)}`).join('\n'));
+        },
+        install(args) {
+          if (!args[0]) { OS.launch('installer'); return; }
+          if (/^https?:/.test(args[0])) { OS.installer.installFromUrl(args[0]); return; }
+          const p = resolve(args[0]);
+          if (!OS.vfs.exists(p)) throw new Error('не найдено: ' + args[0]);
+          OS.installer.installCode(OS.vfs.read(p), OS.vfs.nameOf(p));
         },
         theme(args) {
           if (args[0] !== 'dark' && args[0] !== 'light') throw new Error('theme: dark или light');

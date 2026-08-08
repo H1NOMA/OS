@@ -22,6 +22,7 @@
     root.children['Downloads'] = dir('Downloads');
     root.children['Pictures'] = dir('Pictures');
     root.children['Music'] = dir('Music');
+    root.children['Apps'] = dir('Apps');
     root.children['Trash'] = dir('Trash');
 
     root.children['Desktop'].children['Добро пожаловать.md'] = file('Добро пожаловать.md',
@@ -226,7 +227,7 @@
     /** Удаление. opts.toTrash=true — переместить в /Trash (по умолчанию для UI). */
     rm(path, opts) {
       path = normalize(path);
-      if (path === '/' || /^\/(Desktop|Documents|Downloads|Pictures|Music|Trash)$/.test(path)) {
+      if (path === '/' || /^\/(Desktop|Documents|Downloads|Pictures|Music|Apps|Trash)$/.test(path)) {
         throw new Error('Системную папку удалить нельзя');
       }
       const parent = nodeAt(parentOf(path));
@@ -364,5 +365,9 @@
   };
 
   load();
+  if (root && root.type === 'dir' && !root.children['Apps']) {
+    root.children['Apps'] = dir('Apps');
+    persist();
+  }
   OS.vfs = vfs;
 })();

@@ -5,9 +5,24 @@
   'use strict';
   const { el, esc } = OS;
 
+  // приложения, установленные пользователем (из /Apps), поднимаются при старте
+  function loadUserApps() {
+    let items = [];
+    try { items = OS.vfs.list('/Apps').filter(i => i.type === 'file' && i.name.endsWith('.js')); } catch (e) { return; }
+    items.forEach(f => {
+      try {
+        new Function(OS.vfs.read(f.path))();
+      } catch (e) {
+        console.error('[apps] не загрузилось:', f.name, e);
+        OS.notify({ title: 'Установщик', body: `«${f.name}» не загрузилось: ${e.message}`, appId: 'installer' });
+      }
+    });
+  }
+
   function bootSequence() {
     OS._applyAll();
     OS.wallpapers.apply();
+    loadUserApps();
 
     const boot = document.getElementById('boot');
     const bar = boot.querySelector('.boot-bar > div');
