@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.0';
+  const VERSION = '1.1';
   const CODENAME = 'Nova';
 
   /* ---------- шина событий ---------- */

@@ -52,8 +52,8 @@
   `);
 
   const BOOKMARKS = [
+    { name: 'Google', url: 'https://www.google.com', bg: '#4285F4', label: 'G' },
     { name: 'Википедия', url: 'https://ru.wikipedia.org', bg: '#5c5c66', label: 'W' },
-    { name: 'Bing', url: 'https://www.bing.com', bg: '#3AA6FF', label: 'b' },
     { name: 'Карты OSM', url: 'https://www.openstreetmap.org/export/embed.html?bbox=37.35,55.55,37.85,55.92', bg: '#23D1A8', label: '◈' },
     { name: 'О Hiko OS', url: 'about:hiko', bg: '#8B78FF', label: 'h' },
   ];
@@ -64,7 +64,7 @@
     icon: ICON,
     width: 1000, height: 640,
     minWidth: 480, minHeight: 320,
-    render(win) {
+    render(win, ctx) {
       let stack = ['home'];
       let pos = 0;
       let loadTimer = null;
@@ -149,7 +149,7 @@
         home.innerHTML = `
           <div class="br-clock"></div>
           <div class="br-date"></div>
-          <div class="br-search">${OS.icons.search}<input placeholder="Поиск в интернете" spellcheck="false"></div>
+          <div class="br-search">${OS.icons.search}<input placeholder="Поиск в Google" spellcheck="false"></div>
           <div class="br-tiles">
             ${BOOKMARKS.map((b, i) => `
               <div class="br-tile" data-i="${i}">
@@ -200,7 +200,7 @@
         if (input === 'about:hiko') target = input;
         else if (/^https?:\/\//i.test(input)) target = input;
         else if (/^[\w-]+(\.[\w-]+)+(\/.*)?$/.test(input)) target = 'https://' + input;
-        else target = 'https://www.bing.com/search?q=' + encodeURIComponent(input);
+        else target = 'https://www.google.com/search?q=' + encodeURIComponent(input);
         navigate(target);
       }
 
@@ -216,6 +216,10 @@
       win.on('close', () => clearTimeout(loadTimer));
       show('home');
       updateNav();
+      // запуск с адресом: OS.launch('browser', { url }) или { query } — поиск в Google
+      const a = (ctx && ctx.args) || {};
+      if (a.url) navigate(String(a.url));
+      else if (a.query) navigate('https://www.google.com/search?q=' + encodeURIComponent(String(a.query)));
     },
   });
 })();

@@ -186,7 +186,9 @@
 
   /* ==================== встроенный обработчик ==================== */
 
-  function builtinHandle(text) {
+  // quiet=true — режим для внешних провайдеров: только командные интенты,
+  // без «личности» встроенного помощника; вернёт null, если ничего не понял.
+  function builtinHandle(text, quiet) {
     const q = String(text || '').trim().toLowerCase().replace(/[!?.]+$/, '');
     let m;
     if ((m = q.match(/^(?:открой|запусти|включи)\s+(.+)/))) return run('open-app', { name: m[1] });
@@ -218,6 +220,7 @@
         } catch (e) { /* не выражение */ }
       }
     }
+    if (quiet) return null;
     if (/кто ты|как тебя зовут/.test(q)) return 'Я встроенный помощник Hiko. Когда подключишь своего голосового ассистента (docs/ASSISTANT_API.md) — я уступлю ему место.';
     if (/помощь|что (ты )?умеешь|команды/.test(q)) {
       return 'Умею: «открой <приложение>», «найди <что-то>», «создай заметку <текст>», «тёмная/светлая тема», «смени обои», «который час», «какой сегодня день», «громкость 50», «посчитай 22*3», «покажи стол», «обзор окон», «закрой все», «заблокируй», «выключи».';
@@ -237,7 +240,7 @@
     }
     provider = p;
     OS.emit('assistant:provider', { id: p.id, name: p.name });
-    OS.notify({ title: 'Ассистент', body: `«${p.name || p.id}» подключён 🎙`, appId: 'system' });
+    if (!p.quiet) OS.notify({ title: 'Ассистент', body: `«${p.name || p.id}» подключён 🎙`, appId: 'system' });
     const head = document.querySelector('#assistant-panel .as-sub');
     if (head) head.textContent = p.name || p.id;
     return true;
@@ -367,6 +370,8 @@
     commands: commandList,
     ask,
     say,
+    findApp,
+    builtin: (text) => builtinHandle(text, true),
     open, close, toggle,
     get provider() { return provider ? { id: provider.id, name: provider.name } : null; },
   };
