@@ -1,4 +1,4 @@
-/* hinomaOS · Калькулятор */
+/* Hiko OS · Калькулятор */
 (function () {
   'use strict';
   const { el } = OS;

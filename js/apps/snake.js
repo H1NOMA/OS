@@ -1,4 +1,4 @@
-/* hinomaOS · Змейка — классика на canvas */
+/* Hiko OS · Змейка — классика на canvas */
 (function () {
   'use strict';
   const { el } = OS;

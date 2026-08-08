@@ -1,5 +1,5 @@
 /* ============================================================
-   hinomaOS · Файлы (finder) — проводник
+   Hiko OS · Файлы (finder) — проводник
    ============================================================ */
 (function () {
   'use strict';
@@ -50,7 +50,7 @@
   const objWord = (n) => `${n} ${plural(n, 'объект', 'объекта', 'объектов')}`;
 
   function dispName(path) {
-    if (path === '/' || !path) return 'hinomaOS';
+    if (path === '/' || !path) return 'Hiko OS';
     return RU_NAMES[path] || OS.vfs.nameOf(path);
   }
 
@@ -243,7 +243,7 @@
     /* ---------- отрисовка ---------- */
     function renderCrumbs() {
       const parts = st.cwd.split('/').filter(Boolean);
-      let html = `<span class="fnd-crumb${parts.length ? '' : ' cur'}" data-path="/">hinomaOS</span>`;
+      let html = `<span class="fnd-crumb${parts.length ? '' : ' cur'}" data-path="/">Hiko OS</span>`;
       let acc = '';
       parts.forEach((p, i) => {
         acc += '/' + p;

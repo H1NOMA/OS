@@ -1,5 +1,5 @@
 /* ============================================================
-   hinomaOS · menubar — строка меню + всплывающие/контекстные меню
+   Hiko OS · menubar — строка меню + всплывающие/контекстные меню
    ============================================================ */
 (function () {
   'use strict';
@@ -105,6 +105,7 @@
 
     // — правая часть
     const right = [
+      { id: 'mb-assist', html: OS.icons.spark, title: 'Ассистент (Ctrl+Alt+H)', click: () => OS.assistant.toggle() },
       { id: 'mb-search', html: OS.icons.search, title: 'Поиск (Alt+Space)', click: () => OS.emit('spotlight:toggle') },
       { id: 'mb-mission', html: OS.icons.mission, title: 'Обзор окон (F3)', click: () => OS.wm.missionToggle() },
       { id: 'mb-wifi', html: OS.icons.wifi, title: 'Wi-Fi', click: (e, n) => toggleQuick(n, 'wifi') },
@@ -175,7 +176,7 @@
       {
         title: 'Справка',
         items: [
-          { label: 'О системе hinomaOS', action: showAbout },
+          { label: 'О системе Hiko OS', action: showAbout },
           { label: 'Горячие клавиши', action: showHotkeys },
         ],
       },
@@ -184,7 +185,7 @@
 
   function showAbout() {
     OS.dialog.alert(
-      `hinomaOS ${OS.VERSION} «${OS.CODENAME}»`,
+      `Hiko OS ${OS.VERSION} «${OS.CODENAME}»`,
       `Персональная веб-ОС со своим характером\nЧистый JavaScript, ноль зависимостей\n\nПамять: localStorage (${OS.fmtBytes(OS.vfs.usage())} занято)\nПользователь: ${OS.settings.get('userName')}`,
       `<div style="width:52px;height:52px;color:var(--accent)">${OS.icons.logo}</div>`
     );

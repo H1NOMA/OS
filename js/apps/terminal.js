@@ -1,4 +1,4 @@
-/* hinomaOS · Терминал — командная строка над OS.vfs */
+/* Hiko OS · Терминал — командная строка над OS.vfs */
 (function () {
   'use strict';
   const { el, esc } = OS;
@@ -52,7 +52,7 @@
 
       const inputRow = el('div', 't-line term-input-row');
       const renderInputRow = () => {
-        inputRow.innerHTML = `<span class="t-prompt">user@hinoma</span><span>&nbsp;</span><span class="t-dir">${esc(shortPath(cwd))}</span><span>&nbsp;%&nbsp;</span><span class="t-typed">${esc(input.value)}</span><span class="term-caret"></span>`;
+        inputRow.innerHTML = `<span class="t-prompt">user@hiko</span><span>&nbsp;</span><span class="t-dir">${esc(shortPath(cwd))}</span><span>&nbsp;%&nbsp;</span><span class="t-typed">${esc(input.value)}</span><span class="term-caret"></span>`;
       };
 
       const print = (html, cls) => {
@@ -64,7 +64,7 @@
       const scroll = () => { root.scrollTop = root.scrollHeight; };
 
       root.appendChild(inputRow);
-      print(`hinomaOS ${esc(OS.VERSION)} «${esc(OS.CODENAME)}» — Терминал`, 't-dim');
+      print(`Hiko OS ${esc(OS.VERSION)} «${esc(OS.CODENAME)}» — Терминал`, 't-dim');
       print(`Набери <span class="t-accent">help</span> для списка команд.`, 't-dim');
       renderInputRow();
 
@@ -180,9 +180,9 @@
             '    ╲╱╲╱    ',
           ];
           const info = [
-            ['', `<span class="t-prompt">${esc(OS.settings.get('userName'))}@hinoma</span>`],
+            ['', `<span class="t-prompt">${esc(OS.settings.get('userName'))}@hiko</span>`],
             ['', '─────────────'],
-            ['OS', `hinomaOS ${OS.VERSION} «${OS.CODENAME}»`],
+            ['OS', `Hiko OS ${OS.VERSION} «${OS.CODENAME}»`],
             ['Ядро', 'browser-js 1.0'],
             ['Аптайм', uptime],
             ['Приложений', String(OS.allApps().length)],
@@ -205,7 +205,7 @@
 
       function run(raw) {
         const trimmed = raw.trim();
-        print(`<span class="t-prompt">user@hinoma</span> <span class="t-dir">${esc(shortPath(cwd))}</span> % ${esc(raw)}`);
+        print(`<span class="t-prompt">user@hiko</span> <span class="t-dir">${esc(shortPath(cwd))}</span> % ${esc(raw)}`);
         if (!trimmed) return;
         history.push(trimmed);
         const args = tokenize(trimmed);
@@ -263,7 +263,7 @@
           e.preventDefault();
           complete();
         } else if (e.key === 'c' && e.ctrlKey) {
-          print(`<span class="t-prompt">user@hinoma</span> <span class="t-dir">${esc(shortPath(cwd))}</span> % ${esc(input.value)}^C`);
+          print(`<span class="t-prompt">user@hiko</span> <span class="t-dir">${esc(shortPath(cwd))}</span> % ${esc(input.value)}^C`);
           input.value = '';
           renderInputRow();
           scroll();

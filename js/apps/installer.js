@@ -1,4 +1,4 @@
-/* hinomaOS · Установщик — установка приложений из файла и из интернета */
+/* Hiko OS · Установщик — установка приложений из файла и из интернета */
 (function () {
   'use strict';
   const { el, esc } = OS;
@@ -97,7 +97,7 @@
     const looksLikeApp = code.includes('OS.registerApp') || code.includes('OS.widgets.register');
     const ok = await OS.dialog.confirm(
       'Установить приложение?',
-      `${meta.name ? `«${meta.name}»` : fileName}${sourceUrl ? `\nисточник: ${sourceUrl.slice(0, 60)}` : ''}\n\n⚠ Код получит полный доступ к hinomaOS (файлы, настройки). Устанавливай только то, чему доверяешь.${looksLikeApp ? '' : '\n\nВнимание: в коде не видно OS.registerApp — возможно, это не приложение hinomaOS.'}`,
+      `${meta.name ? `«${meta.name}»` : fileName}${sourceUrl ? `\nисточник: ${sourceUrl.slice(0, 60)}` : ''}\n\n⚠ Код получит полный доступ к Hiko OS (файлы, настройки). Устанавливай только то, чему доверяешь.${looksLikeApp ? '' : '\n\nВнимание: в коде не видно OS.registerApp — возможно, это не приложение Hiko OS.'}`,
       { okLabel: 'Установить', danger: !looksLikeApp }
     );
     if (!ok) return false;
@@ -167,7 +167,7 @@
           <button class="ui-btn ins-demo">🎲 Демо «Кости»</button>
         </div>
         <div class="ins-body">
-          <div class="ins-warn">${OS.icons.warn}<div>Приложение — это .js-файл в формате hinomaOS (см. docs/APP_API.md в репозитории).
+          <div class="ins-warn">${OS.icons.warn}<div>Приложение — это .js-файл в формате Hiko OS (см. docs/APP_API.md в репозитории).
             Установленный код получает полный доступ к системе — ставь только из доверенных источников.
             Файлы хранятся в папке <b>/Apps</b> и загружаются при каждом старте.</div></div>
           <div class="ins-card" style="margin-top:12px">

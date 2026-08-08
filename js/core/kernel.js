@@ -1,5 +1,5 @@
 /* ============================================================
-   hinomaOS · kernel — ядро системы
+   Hiko OS · kernel — ядро системы
    Глобальный namespace `OS`: события, настройки, реестр
    приложений, диалоги, темы, иконки, утилиты.
    ============================================================ */
@@ -66,8 +66,16 @@
     s.textContent = css;
   }
 
+  /* ---------- миграция хранилища hinoma.* -> hiko.* (переименование системы) ---------- */
+  try {
+    [['hinoma.settings.v1', 'hiko.settings.v1'], ['hinoma.vfs.v1', 'hiko.vfs.v1'],
+     ['hinoma.vfs.bak', 'hiko.vfs.bak'], ['hinoma.notifications.v1', 'hiko.notifications.v1']].forEach(([o, n]) => {
+      if (!localStorage.getItem(n) && localStorage.getItem(o)) localStorage.setItem(n, localStorage.getItem(o));
+    });
+  } catch (e) { /* приватный режим */ }
+
   /* ---------- настройки ---------- */
-  const SETTINGS_KEY = 'hinoma.settings.v1';
+  const SETTINGS_KEY = 'hiko.settings.v1';
   const DEFAULT_SETTINGS = {
     userName: 'h1noma',
     theme: 'dark',              // 'light' | 'dark' | 'auto'
@@ -121,8 +129,8 @@
     all: () => ({ ...settings }),
     reset() {
       localStorage.removeItem(SETTINGS_KEY);
-      localStorage.removeItem('hinoma.vfs.v1');
-      localStorage.removeItem('hinoma.notifications.v1');
+      localStorage.removeItem('hiko.vfs.v1');
+      localStorage.removeItem('hiko.notifications.v1');
       location.reload();
     },
   };
@@ -260,7 +268,7 @@
   }
 
   /* ---------- уведомления ---------- */
-  const NOTIF_KEY = 'hinoma.notifications.v1';
+  const NOTIF_KEY = 'hiko.notifications.v1';
   let notifHistory = [];
   try { notifHistory = JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch (e) { /* пусто */ }
   function saveNotifs() {
@@ -287,7 +295,7 @@
   }
 
   /* ---------- иконки ---------- */
-  // Фирменная плитка приложения hinomaOS — мягкий скруглённый квадрат,
+  // Фирменная плитка приложения Hiko OS — мягкий скруглённый квадрат,
   // диагональный градиент, лёгкий верхний блик и тонкая светлая кромка.
   // Гексагон остаётся только у логотипа — как фирменный знак.
   function appTile(bg, glyphSvg, opts) {
@@ -324,6 +332,7 @@
     moon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 62 12 A 40 40 0 1 0 88 62 A 34 34 0 0 1 62 12 Z" fill="currentColor"/></svg>`,
     sun: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="19" fill="currentColor"/><g stroke="currentColor" stroke-width="7" stroke-linecap="round"><path d="M 50 8 L 50 20"/><path d="M 50 80 L 50 92"/><path d="M 8 50 L 20 50"/><path d="M 80 50 L 92 50"/><path d="M 20 20 L 28 28"/><path d="M 72 72 L 80 80"/><path d="M 80 20 L 72 28"/><path d="M 28 72 L 20 80"/></g></svg>`,
     grid: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="currentColor"><rect x="14" y="14" width="20" height="20" rx="5"/><rect x="40" y="14" width="20" height="20" rx="5"/><rect x="66" y="14" width="20" height="20" rx="5"/><rect x="14" y="40" width="20" height="20" rx="5"/><rect x="40" y="40" width="20" height="20" rx="5"/><rect x="66" y="40" width="20" height="20" rx="5"/><rect x="14" y="66" width="20" height="20" rx="5"/><rect x="40" y="66" width="20" height="20" rx="5"/><rect x="66" y="66" width="20" height="20" rx="5"/></g></svg>`,
+    spark: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 50 8 C 54 32 68 46 92 50 C 68 54 54 68 50 92 C 46 68 32 54 8 50 C 32 46 46 32 50 8 Z" fill="currentColor"/><circle cx="79" cy="21" r="7" fill="currentColor" opacity=".7"/></svg>`,
     mission: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="currentColor" stroke-width="7"><rect x="10" y="16" width="44" height="30" rx="6"/><rect x="62" y="22" width="28" height="20" rx="5"/><rect x="16" y="56" width="30" height="24" rx="5"/><rect x="54" y="52" width="36" height="30" rx="6"/></g></svg>`,
     chevronL: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 62 20 L 34 50 L 62 80" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
     chevronR: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 38 20 L 66 50 L 38 80" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/></svg>`,

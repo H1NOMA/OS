@@ -1,4 +1,4 @@
-/* hinomaOS · Браузер — мини-браузер на iframe */
+/* Hiko OS · Браузер — мини-браузер на iframe */
 (function () {
   'use strict';
   const { el, esc } = OS;
@@ -55,7 +55,7 @@
     { name: 'Википедия', url: 'https://ru.wikipedia.org', bg: '#5c5c66', label: 'W' },
     { name: 'Bing', url: 'https://www.bing.com', bg: '#3AA6FF', label: 'b' },
     { name: 'Карты OSM', url: 'https://www.openstreetmap.org/export/embed.html?bbox=37.35,55.55,37.85,55.92', bg: '#23D1A8', label: '◈' },
-    { name: 'О hinomaOS', url: 'about:hinoma', bg: '#8B78FF', label: 'h' },
+    { name: 'О Hiko OS', url: 'about:hiko', bg: '#8B78FF', label: 'h' },
   ];
 
   OS.registerApp({
@@ -109,9 +109,9 @@
           renderHome();
           return;
         }
-        if (target === 'about:hinoma') {
+        if (target === 'about:hiko') {
           urlIn.value = target;
-          win.setTitle('О hinomaOS');
+          win.setTitle('О Hiko OS');
           renderAbout();
           return;
         }
@@ -138,7 +138,7 @@
         b.innerHTML = `
           <div class="b-ic">${OS.icons.warn}</div>
           <h3>Сайт не открывается во встроенном окне</h3>
-          <p>Многие сайты запрещают встраивание (X-Frame-Options). Это ограничение браузера, а не hinomaOS.</p>
+          <p>Многие сайты запрещают встраивание (X-Frame-Options). Это ограничение браузера, а не Hiko OS.</p>
           <button class="ui-btn primary">Открыть в новой вкладке</button>`;
         b.querySelector('button').addEventListener('click', () => window.open(url, '_blank'));
         stage.appendChild(b);
@@ -183,7 +183,7 @@
         const a = el('div');
         a.style.cssText = 'position:absolute;inset:0;overflow-y:auto;background:var(--content-bg)';
         a.innerHTML = `<div class="br-about">
-          <h1><span class="lg">${OS.icons.logo}</span> hinomaOS ${esc(OS.VERSION)} «${esc(OS.CODENAME)}»</h1>
+          <h1><span class="lg">${OS.icons.logo}</span> Hiko OS ${esc(OS.VERSION)} «${esc(OS.CODENAME)}»</h1>
           <p><span class="tag">свой визуал</span><span class="tag">привычная логика</span><span class="tag">0 зависимостей</span></p>
           <p>Персональная операционная система в браузере. Оконный менеджер со снэпом,
           виртуальная файловая система, Spotlight, Mission Control, док с магнификацией —
@@ -197,7 +197,7 @@
 
       function go(input) {
         let target;
-        if (input === 'about:hinoma') target = input;
+        if (input === 'about:hiko') target = input;
         else if (/^https?:\/\//i.test(input)) target = input;
         else if (/^[\w-]+(\.[\w-]+)+(\/.*)?$/.test(input)) target = 'https://' + input;
         else target = 'https://www.bing.com/search?q=' + encodeURIComponent(input);

@@ -1,4 +1,4 @@
-/* hinomaOS · Paint — рисовалка в духе MS Paint */
+/* Hiko OS · Paint — рисовалка в духе MS Paint */
 (function () {
   'use strict';
   const { el, esc } = OS;

@@ -1,4 +1,4 @@
-/* hinomaOS · Сапёр — классический Minesweeper */
+/* Hiko OS · Сапёр — классический Minesweeper */
 (function () {
   'use strict';
   const { el, esc } = OS;

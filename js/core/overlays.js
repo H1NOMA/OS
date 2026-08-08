@@ -1,5 +1,5 @@
 /* ============================================================
-   hinomaOS · overlays — поиск, экран приложений, быстрые настройки,
+   Hiko OS · overlays — поиск, экран приложений, быстрые настройки,
    уведомления (тосты + центр), календарь
    ============================================================ */
 (function () {
@@ -198,7 +198,7 @@
       <div class="cc-module cc-span2">
         <div class="cc-toggle-row" data-t="wifi">
           <div class="cc-toggle-icon ${s.get('wifi') ? 'on' : ''}">${OS.icons.wifi}</div>
-          <div><div class="cc-t-name">Wi-Fi</div><div class="cc-t-state">${s.get('wifi') ? 'hinoma_5G' : 'Выкл.'}</div></div>
+          <div><div class="cc-t-name">Wi-Fi</div><div class="cc-t-state">${s.get('wifi') ? 'Hiko_5G' : 'Выкл.'}</div></div>
         </div>
         <div class="cc-toggle-row" data-t="bluetooth">
           <div class="cc-toggle-icon ${s.get('bluetooth') ? 'on' : ''}">${OS.icons.bluetooth}</div>
@@ -359,6 +359,7 @@
     desktop: () => OS.wm.showDesktop(),
     search: spotlightToggle,
     apps: launchpadToggle,
+    assistant: () => OS.assistant.toggle(),
     lock: () => OS.emit('session:lock'),
   };
   let cornerAt = 0;

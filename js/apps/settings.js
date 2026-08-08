@@ -1,4 +1,4 @@
-/* hinomaOS · Настройки — системные настройки */
+/* Hiko OS · Настройки — системные настройки */
 (function () {
   'use strict';
   const { el, esc } = OS;
@@ -261,7 +261,7 @@
           const NAMES = { tl: 'Левый верхний', tr: 'Правый верхний', bl: 'Левый нижний', br: 'Правый нижний' };
           const OPTS = [
             ['', 'Выключено'], ['mission', 'Обзор окон'], ['desktop', 'Показать стол'],
-            ['search', 'Поиск'], ['apps', 'Все приложения'], ['lock', 'Заблокировать'],
+            ['search', 'Поиск'], ['apps', 'Все приложения'], ['assistant', 'Ассистент'], ['lock', 'Заблокировать'],
           ];
           const hc = { tl: '', tr: '', bl: '', br: '', ...s.get('hotCorners', {}) };
           const card = el('div', 'st-card');
@@ -288,16 +288,16 @@
           exBtn.addEventListener('click', () => {
             try {
               const dump = {
-                hinoma: OS.VERSION,
+                hiko: OS.VERSION,
                 exported: new Date().toISOString(),
-                settings: JSON.parse(localStorage.getItem('hinoma.settings.v1') || '{}'),
-                vfs: JSON.parse(localStorage.getItem('hinoma.vfs.v1') || 'null'),
-                notifications: JSON.parse(localStorage.getItem('hinoma.notifications.v1') || '[]'),
+                settings: JSON.parse(localStorage.getItem('hiko.settings.v1') || '{}'),
+                vfs: JSON.parse(localStorage.getItem('hiko.vfs.v1') || 'null'),
+                notifications: JSON.parse(localStorage.getItem('hiko.notifications.v1') || '[]'),
               };
               const blob = new Blob([JSON.stringify(dump)], { type: 'application/json' });
               const a = document.createElement('a');
               a.href = URL.createObjectURL(blob);
-              a.download = `hinomaOS-backup-${new Date().toISOString().slice(0, 10)}.json`;
+              a.download = `HikoOS-backup-${new Date().toISOString().slice(0, 10)}.json`;
               a.click();
               setTimeout(() => URL.revokeObjectURL(a.href), 5000);
               OS.notify({ title: 'Данные', body: 'Резервная копия сохранена в загрузки браузера', appId: 'settings' });
@@ -320,14 +320,14 @@
             reader.onload = async () => {
               try {
                 const dump = JSON.parse(reader.result);
-                if (!dump || !dump.hinoma || !dump.vfs) throw new Error('Это не файл резервной копии hinomaOS');
+                if (!dump || !(dump.hiko || dump.hinoma) || !dump.vfs) throw new Error('Это не файл резервной копии Hiko OS');
                 const ok = await OS.dialog.confirm('Импортировать данные?',
                   `Копия от ${dump.exported ? dump.exported.slice(0, 10) : '—'}. Текущие файлы и настройки будут заменены.`,
                   { okLabel: 'Импортировать', danger: true });
                 if (!ok) return;
-                localStorage.setItem('hinoma.settings.v1', JSON.stringify(dump.settings || {}));
-                localStorage.setItem('hinoma.vfs.v1', JSON.stringify(dump.vfs));
-                localStorage.setItem('hinoma.notifications.v1', JSON.stringify(dump.notifications || []));
+                localStorage.setItem('hiko.settings.v1', JSON.stringify(dump.settings || {}));
+                localStorage.setItem('hiko.vfs.v1', JSON.stringify(dump.vfs));
+                localStorage.setItem('hiko.notifications.v1', JSON.stringify(dump.notifications || []));
                 location.reload();
               } catch (e) { OS.dialog.alert('Не удалось импортировать', e.message); }
             };
@@ -380,7 +380,7 @@
             <div style="display:flex;align-items:center;gap:16px;padding:6px 0 14px">
               <div style="width:64px;height:64px;color:var(--accent)">${OS.icons.logo}</div>
               <div>
-                <div style="font-size:20px;font-weight:800">hinomaOS ${esc(OS.VERSION)}</div>
+                <div style="font-size:20px;font-weight:800">Hiko OS ${esc(OS.VERSION)}</div>
                 <div class="sub">кодовое имя «${esc(OS.CODENAME)}» · веб-десктоп</div>
               </div>
             </div>
@@ -406,11 +406,11 @@
             <div class="st-row">
               <div style="width:40px;height:40px;flex:none">${OS.icons.warn}</div>
               <div>
-                <div class="lbl" style="font-weight:700">Полный сброс hinomaOS</div>
+                <div class="lbl" style="font-weight:700">Полный сброс Hiko OS</div>
                 <div class="sub">Удалит все файлы, настройки и уведомления. Система вернётся к заводскому состоянию.</div>
               </div>
             </div>`;
-          const btn = el('button', 'ui-btn danger', 'Сбросить hinomaOS…');
+          const btn = el('button', 'ui-btn danger', 'Сбросить Hiko OS…');
           btn.style.marginTop = '10px';
           btn.addEventListener('click', async () => {
             const ok = await OS.dialog.confirm('Сбросить систему?', 'Все данные будут удалены безвозвратно. Точно?', { okLabel: 'Сбросить', danger: true });

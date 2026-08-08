@@ -1,4 +1,4 @@
-/* hinomaOS · Диспетчер задач — процессы и производительность */
+/* Hiko OS · Диспетчер задач — процессы и производительность */
 (function () {
   'use strict';
   const { el, esc } = OS;
@@ -129,7 +129,7 @@
         body.innerHTML = `<table class="tm-table">
           <thead><tr><th>Приложение</th><th>Статус</th><th class="num">ЦП</th><th class="num">Память</th></tr></thead>
           <tbody>
-            <tr class="proc sys"><td><div class="tm-name"><div class="tm-ic" style="color:var(--accent)">${OS.icons.logo}</div><span>Система</span>&nbsp;<span class="tm-dim">— ядро hinomaOS</span></div></td>
+            <tr class="proc sys"><td><div class="tm-name"><div class="tm-ic" style="color:var(--accent)">${OS.icons.logo}</div><span>Система</span>&nbsp;<span class="tm-dim">— ядро Hiko OS</span></div></td>
               <td class="tm-dim">Работает</td><td class="num">1.2%</td><td class="num">210 МБ</td></tr>
             ${rows}
           </tbody></table>
