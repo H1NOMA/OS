@@ -42,7 +42,6 @@
       let name, iconHtml;
       if (m.special === 'launchpad') {
         name = 'Приложения';
-        iconHtml = OS.appTile({ from: '#8e9bb5', to: '#5a6478' }, `<g transform="translate(-50 -50) scale(0.62) translate(30 30)">${OS.icons.grid.replace(/<\/?svg[^>]*>/g, '')}</g>`.replace('currentColor', '#fff'));
         iconHtml = OS.appTile(
           { from: '#aab6cf', to: '#616c85' },
           `<g fill="#fff" transform="translate(-31 -31) scale(0.62)">

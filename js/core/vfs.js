@@ -6,7 +6,9 @@
   'use strict';
 
   const KEY = 'hinoma.vfs.v1';
-  const MAX_FILE = 2.5 * 1024 * 1024; // ~2.5 МБ на файл (лимит localStorage)
+  const BAK_KEY = 'hinoma.vfs.bak';
+  const MAX_FILE = 2.5 * 1024 * 1024;  // ~2.5 МБ на файл (лимит localStorage)
+  const MAX_TOTAL = 4.4 * 1024 * 1024; // мягкий потолок всей ФС
 
   const now = () => Date.now();
   const dir = (name, children) => ({ type: 'dir', name, children: children || {}, created: now(), modified: now() });
@@ -71,17 +73,38 @@
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) { root = JSON.parse(raw); return; }
-    } catch (e) { console.warn('[VFS] повреждено, пересоздаю', e); }
+    } catch (e) {
+      console.warn('[VFS] основное хранилище повреждено, пробую резервную копию', e);
+      // защита: пытаемся поднять резервную копию
+      try {
+        const bak = localStorage.getItem(BAK_KEY);
+        if (bak) {
+          root = JSON.parse(bak);
+          persist();
+          setTimeout(() => OS.notify({ title: 'Файловая система', body: 'Данные восстановлены из резервной копии', appId: 'system' }), 1500);
+          return;
+        }
+      } catch (e2) { console.warn('[VFS] копия тоже повреждена', e2); }
+    }
     root = seed();
     persist();
   }
 
   let persistTimer = null;
+  let bakTimer = 0;
   function persist() {
     clearTimeout(persistTimer);
     persistTimer = setTimeout(() => {
-      try { localStorage.setItem(KEY, JSON.stringify(root)); }
-      catch (e) {
+      try {
+        const json = JSON.stringify(root);
+        localStorage.setItem(KEY, json);
+        // резервная копия — не чаще раза в 30 секунд и только пока ФС компактна
+        const now = Date.now();
+        if (now - bakTimer > 30000 && json.length < 1.6 * 1024 * 1024) {
+          bakTimer = now;
+          try { localStorage.setItem(BAK_KEY, json); } catch (e) { /* нет места под копию — не страшно */ }
+        }
+      } catch (e) {
         console.error('[VFS] переполнение хранилища', e);
         OS.notify({ title: 'Файловая система', body: 'Хранилище переполнено — файл не сохранён', appId: 'system' });
       }
@@ -172,6 +195,7 @@
       path = normalize(path);
       content = String(content ?? '');
       if (content.length > MAX_FILE) throw new Error('Файл слишком большой (макс. 2.5 МБ)');
+      if (vfs.usage() + content.length > MAX_TOTAL) throw new Error('Хранилище почти заполнено — освободи место (Настройки → О системе)');
       const parent = assertDir(parentOf(path));
       const name = nameOf(path);
       if (!name) throw new Error('Пустое имя файла');
@@ -322,6 +346,20 @@
 
     usage() {
       try { return (localStorage.getItem(KEY) || '').length; } catch (e) { return 0; }
+    },
+
+    backupInfo() {
+      try {
+        const b = localStorage.getItem(BAK_KEY);
+        return b ? { size: b.length } : null;
+      } catch (e) { return null; }
+    },
+    restoreFromBackup() {
+      const b = localStorage.getItem(BAK_KEY);
+      if (!b) throw new Error('Резервной копии нет');
+      JSON.parse(b); // валидация
+      localStorage.setItem(KEY, b);
+      location.reload();
     },
   };
 

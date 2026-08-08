@@ -97,9 +97,9 @@
       root.innerHTML = `
         <div class="win-titlebar">
           <div class="traffic">
-            <div class="tl tl-close" title="Закрыть"><svg viewBox="0 0 10 10"><path d="M2 2 L8 8 M8 2 L2 8" stroke="rgba(77,0,0,.85)" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-            <div class="tl tl-min" title="Свернуть"><svg viewBox="0 0 10 10"><path d="M2 5 L8 5" stroke="rgba(100,60,0,.85)" stroke-width="1.4" stroke-linecap="round"/></svg></div>
-            <div class="tl tl-max" title="Развернуть"><svg viewBox="0 0 10 10"><path d="M2.6 5.6 L2.6 7.4 L4.4 7.4 M7.4 4.4 L7.4 2.6 L5.6 2.6" stroke="rgba(0,70,0,.85)" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="tl tl-close" title="Закрыть"><svg viewBox="0 0 10 10"><path d="M2 2 L8 8 M8 2 L2 8" stroke="rgba(20,10,10,.62)" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <div class="tl tl-min" title="Свернуть"><svg viewBox="0 0 10 10"><path d="M2 5 L8 5" stroke="rgba(40,25,0,.62)" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+            <div class="tl tl-max" title="Развернуть"><svg viewBox="0 0 10 10"><path d="M2.6 5.6 L2.6 7.4 L4.4 7.4 M7.4 4.4 L7.4 2.6 L5.6 2.6" stroke="rgba(0,40,26,.62)" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           </div>
           <div class="win-title">${esc(app.name)}</div>
         </div>
@@ -150,6 +150,13 @@
 
     focus() {
       if (focused === this && this.root.classList.contains('focused')) return;
+      // перенормировка z-index — чтобы окна никогда не «переросли» панели ОС
+      if (zTop > 7000) {
+        const sorted = Array.from(windows.values())
+          .sort((a, b) => (parseInt(a.root.style.zIndex) || 0) - (parseInt(b.root.style.zIndex) || 0));
+        zTop = 100;
+        sorted.forEach(w => { w.root.style.zIndex = ++zTop; });
+      }
       if (focused && focused !== this) focused.root.classList.remove('focused');
       focused = this;
       this.root.classList.add('focused');
@@ -621,6 +628,16 @@
     byId: (id) => windows.get(id),
     minimizeOthers(keep) {
       windows.forEach(w => { if (w !== keep && !w.isMin) w.minimize(); });
+    },
+    /** «Показать стол»: свернуть всё; повторный вызов возвращает окна */
+    showDesktop() {
+      if (this._peek && this._peek.some(id => windows.has(id) && windows.get(id).isMin)) {
+        this._peek.forEach(id => { const w = windows.get(id); if (w && w.isMin) w.restore(); });
+        this._peek = null;
+      } else {
+        this._peek = Array.from(windows.values()).filter(w => !w.isMin).map(w => w.id);
+        this._peek.forEach(id => windows.get(id).minimize());
+      }
     },
     closeAll(appId) {
       Array.from(windows.values()).filter(w => !appId || w.app.id === appId).forEach(w => w.close());

@@ -243,9 +243,13 @@
   }
 
   function remove(uidv) {
-    unmount(uidv);
+    const inst = live.get(uidv);
     entries = entries.filter(e => e.uid !== uidv);
     persist();
+    if (inst) {
+      inst.el.classList.add('wg-out');
+      setTimeout(() => unmount(uidv), 190);
+    }
   }
 
   /* ================= галерея ================= */

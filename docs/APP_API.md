@@ -111,7 +111,7 @@ OS.widgets.register({
 
 `userName` (string), `theme` ('light'|'dark'|'auto'), `accent` (hex), `wallpaper` (id пресета или data:-URI),
 `dockSize` (44–72), `dockMagnify` (bool), `nightLight` (bool), `brightness` (0.4–1), `volume` (0–100),
-`wifi`, `bluetooth`, `dnd` (bool), `dockPinned` (string[]), `widgets` (служебный — список виджетов).
+`wifi`, `bluetooth`, `dnd` (bool), `dockPinned` (string[]), `hotCorners` ({tl,tr,bl,br}), `passHash` (строка, пусто = без пароля), `widgets` (служебный — список виджетов).
 `OS.settings.set` сам применяет тему/акцент/яркость и шлёт `settings:change`.
 
 ## UI-кит (готовые классы из css/system.css — ИСПОЛЬЗУЙ ИХ)

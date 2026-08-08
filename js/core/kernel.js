@@ -81,6 +81,8 @@
     wifi: true,
     bluetooth: true,
     dnd: false,                 // не беспокоить
+    passHash: '',               // пароль экрана блокировки (простой хэш)
+    hotCorners: { tl: 'mission', tr: '', bl: '', br: '' },
     dockPinned: ['finder', 'browser', 'textedit', 'terminal', 'calculator', 'paint', 'photos', 'minesweeper', 'taskmgr', 'settings'],
     desktopIconPos: {},         // имя -> {x, y}
     firstRun: true,
@@ -96,6 +98,12 @@
   if (settings.accent === '#0A84FF') settings.accent = DEFAULT_SETTINGS.accent;
   if (!String(settings.wallpaper).startsWith('data:') && !WALLPAPER_IDS.includes(settings.wallpaper)) {
     settings.wallpaper = DEFAULT_SETTINGS.wallpaper;
+  }
+  if (!settings.dockPinsV2) {
+    settings.dockPinsV2 = true;
+    ['music', 'snake'].forEach(id => {
+      if (Array.isArray(settings.dockPinned) && !settings.dockPinned.includes(id)) settings.dockPinned.push(id);
+    });
   }
 
   const saveSettings = debounce(() => {
@@ -279,40 +287,20 @@
   }
 
   /* ---------- иконки ---------- */
-  // Фирменная плитка приложения hinomaOS — скруглённый шестиугольник
-  // (перекликается с гексагоном-логотипом), диагональный градиент + глиф.
-  function roundedHexPath(cornerR) {
-    const V = [[98, 50], [74, 95], [26, 95], [2, 50], [26, 5], [74, 5]];
-    const segs = V.map((C, i) => {
-      const P = V[(i + 5) % 6], N = V[(i + 1) % 6];
-      const d1 = [C[0] - P[0], C[1] - P[1]], l1 = Math.hypot(d1[0], d1[1]);
-      const d2 = [N[0] - C[0], N[1] - C[1]], l2 = Math.hypot(d2[0], d2[1]);
-      return {
-        a: [C[0] - d1[0] / l1 * cornerR, C[1] - d1[1] / l1 * cornerR],
-        C,
-        b: [C[0] + d2[0] / l2 * cornerR, C[1] + d2[1] / l2 * cornerR],
-      };
-    });
-    let d = `M ${segs[0].a[0].toFixed(1)} ${segs[0].a[1].toFixed(1)} `;
-    for (let i = 0; i < 6; i++) {
-      const cur = segs[i], nxt = segs[(i + 1) % 6];
-      d += `Q ${cur.C[0]} ${cur.C[1]} ${cur.b[0].toFixed(1)} ${cur.b[1].toFixed(1)} L ${nxt.a[0].toFixed(1)} ${nxt.a[1].toFixed(1)} `;
-    }
-    return d + 'Z';
-  }
-  const HEX_TILE = roundedHexPath(15);
-
+  // Фирменная плитка приложения hinomaOS — мягкий скруглённый квадрат,
+  // диагональный градиент, лёгкий верхний блик и тонкая светлая кромка.
+  // Гексагон остаётся только у логотипа — как фирменный знак.
   function appTile(bg, glyphSvg, opts) {
     const o = opts || {};
     const gid = uid('g');
     return `<svg class="app-tile" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
       <defs>${bg.defs ? bg.defs(gid) : `<linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stop-color="${bg.from}"/><stop offset="1" stop-color="${bg.to}"/>
-      </linearGradient>`}<clipPath id="${gid}c"><path d="${HEX_TILE}"/></clipPath></defs>
-      <path d="${HEX_TILE}" fill="url(#${gid})"/>
-      ${o.noGloss ? '' : `<g clip-path="url(#${gid}c)"><ellipse cx="30" cy="0" rx="70" ry="36" fill="rgba(255,255,255,.14)"/></g>`}
-      <path d="${HEX_TILE}" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1.6"/>
-      <g transform="translate(50 50) scale(.86)">${glyphSvg}</g>
+      </linearGradient>`}<clipPath id="${gid}c"><rect x="5" y="5" width="90" height="90" rx="25"/></clipPath></defs>
+      <rect x="5" y="5" width="90" height="90" rx="25" fill="url(#${gid})"/>
+      ${o.noGloss ? '' : `<g clip-path="url(#${gid}c)"><ellipse cx="28" cy="-4" rx="78" ry="40" fill="rgba(255,255,255,.13)"/></g>`}
+      <rect x="5.8" y="5.8" width="88.4" height="88.4" rx="24.4" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1.6"/>
+      <g transform="translate(50 50) scale(.88)">${glyphSvg}</g>
     </svg>`;
   }
 
@@ -361,7 +349,7 @@
         <div class="dlg-icon">${opts.icon || ICONS.warn}</div>
         <div class="dlg-title">${esc(opts.title || '')}</div>
         <div class="dlg-msg">${esc(opts.message || '')}</div>
-        ${opts.input !== undefined ? `<input type="text" spellcheck="false">` : ''}
+        ${opts.input !== undefined ? `<input type="${opts.password ? 'password' : 'text'}" spellcheck="false">` : ''}
         <div class="dlg-btns"></div>`;
       const btns = $('.dlg-btns', dlg);
       const input = $('input', dlg);
@@ -400,14 +388,35 @@
         { label: opts?.okLabel || 'OK', primary: !opts?.danger, danger: opts?.danger, value: true },
       ],
     }),
-    prompt: (title, message, initial) => dialogBase({
-      title, message, input: initial || '',
+    prompt: (title, message, initial, opts) => dialogBase({
+      title, message, input: initial || '', password: opts && opts.password,
       buttons: [
         { label: 'Отмена', value: null },
         { label: 'OK', primary: true, value: true },
       ],
     }),
   };
+
+  /* ---------- простой хэш пароля (защита «от посторонних глаз») ---------- */
+  function hashPass(str) {
+    let h = 5381;
+    const salted = 'hinoma\u00b7' + String(str);
+    for (let i = 0; i < salted.length; i++) h = ((h << 5) + h + salted.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36) + '-' + salted.length.toString(36);
+  }
+
+  /* ---------- глобальная защита от необработанных ошибок ---------- */
+  const seenErrors = new Map();
+  function reportError(msg) {
+    const key = String(msg || 'неизвестная ошибка').slice(0, 90);
+    const n = (seenErrors.get(key) || 0) + 1;
+    seenErrors.set(key, n);
+    if (n === 1 && seenErrors.size <= 3) {
+      notify({ title: 'Системная ошибка', body: key, appId: 'system' });
+    }
+  }
+  window.addEventListener('error', (e) => reportError(e.message));
+  window.addEventListener('unhandledrejection', (e) => reportError(e.reason && e.reason.message ? e.reason.message : e.reason));
 
   /* ---------- звук (WebAudio, без внешних файлов) ---------- */
   let audioCtx = null;
@@ -438,7 +447,7 @@
     openFile, appForFile,
     notify, clearNotifications,
     getNotifications: () => notifHistory.slice(),
-    dialog,
+    dialog, hashPass,
     icons: ICONS, appTile, stroke, fileIcon,
     beep,
     // заполняются другими модулями ядра:

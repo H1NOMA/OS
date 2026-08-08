@@ -6,6 +6,13 @@
   'use strict';
   const { el, esc } = OS;
 
+  // плавное закрытие панели: класс -> удаление
+  function animateOut(node, done) {
+    if (!node) { if (done) done(); return; }
+    node.classList.add('panel-out');
+    setTimeout(() => { node.remove(); if (done) done(); }, 170);
+  }
+
   /* ==================== SPOTLIGHT ==================== */
 
   let spotEl = null;
@@ -35,7 +42,7 @@
   }
   function spotOutside(e) { if (spotEl && !spotEl.contains(e.target)) spotlightClose(); }
   function spotlightClose() {
-    if (spotEl) spotEl.remove();
+    animateOut(spotEl);
     spotEl = null;
     spotItems = [];
     document.removeEventListener('pointerdown', spotOutside, true);
@@ -45,6 +52,26 @@
     const box = spotEl.querySelector('.spot-results');
     q = q.trim().toLowerCase();
     if (!q) { box.classList.add('hidden'); box.innerHTML = ''; spotItems = []; return; }
+
+    // живой калькулятор: «2+2*3» считается прямо в поиске
+    const calcItems = [];
+    const expr = q.replace(/,/g, '.').replace(/[×х]/g, '*').replace(/[÷:]/g, '/').replace(/\s+/g, '');
+    if (/^[\d+\-*/().%]+$/.test(expr) && /\d/.test(expr) && /[+\-*/]/.test(expr.slice(1))) {
+      try {
+        const val = Function('"use strict";return (' + expr + ')')();
+        if (typeof val === 'number' && isFinite(val)) {
+          const pretty = String(+val.toPrecision(12)).replace('.', ',');
+          calcItems.push({
+            kind: 'calc', label: `= ${pretty}`, sub: 'Enter — скопировать результат',
+            icon: `<div style="color:var(--accent)">${OS.icons.logo}</div>`,
+            run: () => {
+              try { navigator.clipboard.writeText(pretty); } catch (e) { /* — */ }
+              OS.notify({ title: 'Калькулятор', body: `${q} = ${pretty} · скопировано`, appId: 'calculator' });
+            },
+          });
+        }
+      } catch (e) { /* не выражение — молчим */ }
+    }
 
     const apps = OS.allApps()
       .filter(a => a.name.toLowerCase().includes(q) || a.id.includes(q))
@@ -59,7 +86,7 @@
     if ('выключить'.includes(q) || 'shutdown'.includes(q)) actions.push({ kind: 'act', label: 'Выключить', sub: 'Действие', icon: `<div style="color:var(--accent)">${OS.icons.power}</div>`, run: () => OS.emit('session:shutdown') });
     if ('заблокировать'.includes(q) || 'lock'.includes(q)) actions.push({ kind: 'act', label: 'Заблокировать экран', sub: 'Действие', icon: `<div style="color:var(--accent)">${OS.icons.moon}</div>`, run: () => OS.emit('session:lock') });
 
-    spotItems = [...apps, ...files, ...actions];
+    spotItems = [...calcItems, ...apps, ...files, ...actions];
     spotIdx = 0;
     if (!spotItems.length) {
       box.innerHTML = `<div class="spot-cat">Ничего не найдено</div>`;
@@ -70,7 +97,7 @@
     let lastKind = null;
     spotItems.forEach((it, i) => {
       if (it.kind !== lastKind) {
-        html += `<div class="spot-cat">${it.kind === 'app' ? 'Приложения' : it.kind === 'file' ? 'Файлы' : 'Действия'}</div>`;
+        html += `<div class="spot-cat">${it.kind === 'calc' ? 'Калькулятор' : it.kind === 'app' ? 'Приложения' : it.kind === 'file' ? 'Файлы' : 'Действия'}</div>`;
         lastKind = it.kind;
       }
       html += `<div class="spot-item ${i === spotIdx ? 'active' : ''}" data-i="${i}">
@@ -125,14 +152,17 @@
       OS.allApps()
         .filter(a => !a.hidden && (!q || a.name.toLowerCase().includes(q)))
         .sort((a, b) => a.name.localeCompare(b.name, 'ru'))
-        .forEach(a => {
+        .forEach((a, i) => {
           const item = el('div', 'lp-app', `
             <div class="lp-icon">${a.icon || OS.icons.fileGeneric}</div>
             <div class="lp-name">${esc(a.name)}</div>`);
+          item.style.setProperty('--i', i);
           item.addEventListener('click', () => { launchpadClose(); OS.launch(a.id); });
           grid.appendChild(item);
         });
     };
+    grid.classList.add('stagger');
+    setTimeout(() => grid.classList.remove('stagger'), 650);
     fill('');
     input.focus();
     input.addEventListener('input', () => fill(input.value));
@@ -208,7 +238,8 @@
         } else {
           OS.settings.set(t, !s.get(t));
         }
-        ccClose(); ccToggle(); // перерисовать
+        if (ccEl) { ccEl.remove(); ccEl = null; document.removeEventListener('pointerdown', ccOutside, true); }
+        ccToggle(); // перерисовать без анимации закрытия
       });
     });
     ccEl.querySelector('[data-s="brightness"]').addEventListener('input', (e) => {
@@ -224,7 +255,7 @@
     if (ccEl && !ccEl.contains(e.target) && !e.target.closest('#mb-cc')) ccClose();
   }
   function ccClose() {
-    if (ccEl) ccEl.remove();
+    animateOut(ccEl);
     ccEl = null;
     document.removeEventListener('pointerdown', ccOutside, true);
   }
@@ -272,7 +303,7 @@
     if (cpEl && !cpEl.contains(e.target) && !e.target.closest('#mb-clock')) cpClose();
   }
   function cpClose() {
-    if (cpEl) cpEl.remove();
+    animateOut(cpEl);
     cpEl = null;
     document.removeEventListener('pointerdown', cpOutside, true);
   }
@@ -321,5 +352,32 @@
     }
   });
 
-  OS.overlays = { spotlightToggle, launchpadToggle, ccToggle, clockPanelToggle };
+  /* ==================== ГОРЯЧИЕ УГЛЫ ==================== */
+
+  const CORNER_ACTIONS = {
+    mission: () => OS.wm.missionToggle(),
+    desktop: () => OS.wm.showDesktop(),
+    search: spotlightToggle,
+    apps: launchpadToggle,
+    lock: () => OS.emit('session:lock'),
+  };
+  let cornerAt = 0;
+  let cornerArmed = true; // взводится только после ухода из угла
+  document.addEventListener('mousemove', (e) => {
+    const M = 2;
+    const L = e.clientX <= M, R = e.clientX >= innerWidth - M - 1;
+    const T = e.clientY <= M, B = e.clientY >= innerHeight - M - 1;
+    const corner = L && T ? 'tl' : R && T ? 'tr' : L && B ? 'bl' : R && B ? 'br' : null;
+    if (!corner) { cornerArmed = true; return; }
+    if (!cornerArmed || performance.now() - cornerAt < 900) return;
+    const conf = OS.settings.get('hotCorners', {});
+    const fn = CORNER_ACTIONS[conf[corner]];
+    if (fn) {
+      cornerAt = performance.now();
+      cornerArmed = false;
+      fn();
+    }
+  });
+
+  OS.overlays = { spotlightToggle, launchpadToggle, ccToggle, clockPanelToggle, animateOut };
 })();

@@ -177,6 +177,8 @@ img { -webkit-user-drag: none; }
   -webkit-box-orient: vertical;
   word-break: break-word;
 }
+.di { transition: background .15s ease; }
+.di:hover { background: rgba(255,255,255,.09); }
 .di.selected .di-icon { filter: drop-shadow(0 3px 6px rgba(0,0,0,.35)) brightness(.72); }
 .di.selected .di-label { background: var(--accent); color: var(--on-accent); text-shadow: none; }
 .di .di-rename {
@@ -379,7 +381,8 @@ img { -webkit-user-drag: none; }
   border-radius: var(--r-win);
   box-shadow: var(--shadow-win-blur), 0 0 0 1px var(--win-border);
   overflow: hidden;
-  animation: win-open .26s var(--ease-out);
+  transition: box-shadow .25s ease;
+  animation: win-open .34s cubic-bezier(.3, 1.25, .44, 1);
 }
 .window::before {
   content: "";
@@ -394,7 +397,7 @@ img { -webkit-user-drag: none; }
 .window.maximized::before { display: none; }
 
 @keyframes win-open {
-  from { opacity: 0; transform: scale(.92) translateY(14px); }
+  from { opacity: 0; transform: scale(.94) translateY(18px); }
   to   { opacity: 1; transform: none; }
 }
 .window.closing {
@@ -438,18 +441,19 @@ img { -webkit-user-drag: none; }
   flex: none;
   align-items: center;
 }
-/* фирменные кнопки окна — шестиугольники, как логотип */
+/* кнопки окна — фирменная палитра (коралл / янтарь / мята) */
 .tl {
-  width: 14px; height: 13px;
-  clip-path: polygon(27% 3%, 73% 3%, 97% 50%, 73% 97%, 27% 97%, 3% 50%);
+  width: 12.5px; height: 12.5px;
+  border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   cursor: default;
   position: relative;
-  transition: transform .12s var(--ease-spring);
+  box-shadow: inset 0 0 0 .5px rgba(0,0,0,.18);
+  transition: transform .14s var(--ease-spring), background .2s;
 }
-.tl:hover { transform: scale(1.18); }
-.tl svg { width: 8px; height: 8px; opacity: 0; transition: opacity .1s; }
-.window.focused .tl svg { opacity: .4; }
+.tl:hover { transform: scale(1.15); }
+.tl svg { width: 8px; height: 8px; opacity: 0; transition: opacity .12s; }
+.window.focused .tl svg { opacity: .35; }
 .traffic:hover .tl svg { opacity: 1; }
 .tl-close { background: #FF6B5E; }
 .tl-min   { background: #FFB454; }
@@ -1012,7 +1016,9 @@ img { -webkit-user-drag: none; }
   cursor: default;
   white-space: nowrap;
 }
+.ui-btn { transition: background .15s ease, filter .15s ease, transform .1s ease; }
 .ui-btn:hover { background: var(--ctl-bg-hover); }
+.ui-btn:active { transform: scale(.97); }
 .ui-btn:active { filter: brightness(.92); }
 .ui-btn.primary {
   background: var(--accent);
@@ -1280,3 +1286,79 @@ img { -webkit-user-drag: none; }
 }
 
 .hidden { display: none !important; }
+
+
+/* ============================================================
+   АНИМАЦИИ: выходы панелей, стаггер, защита от укачивания
+   ============================================================ */
+
+.panel-out {
+  transition: opacity .16s ease, transform .16s ease !important;
+  opacity: 0 !important;
+  transform: translateY(-8px) scale(.98) !important;
+  pointer-events: none !important;
+}
+#spotlight.panel-out { transform: translateX(-50%) translateY(-8px) scale(.98) !important; }
+#wg-gallery.panel-out { transform: none !important; }
+#wg-gallery.panel-out .wg-panel { transform: scale(.96); transition: transform .16s ease; }
+
+.lp-grid.stagger .lp-app {
+  animation: lp-pop .34s var(--ease-spring) both;
+  animation-delay: calc(var(--i, 0) * 13ms);
+}
+@keyframes lp-pop {
+  from { opacity: 0; transform: scale(.7) translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.widget.wg-out {
+  transition: opacity .18s ease, transform .18s ease;
+  opacity: 0;
+  transform: scale(.82);
+  pointer-events: none;
+}
+
+/* пароль на экране блокировки */
+.lock-pass-row { display: flex; gap: 8px; align-items: center; }
+.lock-pass {
+  width: 190px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 999px;
+  background: rgba(255,255,255,.16);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: #fff;
+  font-size: 14px;
+  font-family: var(--font);
+  outline: none;
+  text-align: center;
+}
+.lock-pass::placeholder { color: rgba(255,255,255,.6); }
+.lock-pass:focus { border-color: rgba(255,255,255,.7); }
+.lock-user.shake { animation: lock-shake .4s ease; }
+@keyframes lock-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-11px); }
+  40% { transform: translateX(9px); }
+  60% { transform: translateX(-7px); }
+  80% { transform: translateX(5px); }
+}
+
+/* логотип на загрузке — прорисовка штриха */
+#boot .boot-logo path {
+  stroke-dasharray: 320;
+  stroke-dashoffset: 320;
+  animation: boot-draw 1.6s ease forwards;
+}
+#boot .boot-logo path:last-child { animation-delay: .35s; }
+@keyframes boot-draw { to { stroke-dashoffset: 0; } }
+
+/* уважение к prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

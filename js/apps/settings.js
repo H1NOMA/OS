@@ -66,6 +66,8 @@
     { id: 'wallpaper', name: 'Обои', ic: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 15 L8 10 L13 15 L16 12 L21 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="16" cy="9" r="1.6" fill="currentColor"/></svg>' },
     { id: 'dock', name: 'Панель', ic: '<svg viewBox="0 0 24 24"><rect x="3" y="14" width="18" height="6" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="17" r="1.4" fill="currentColor"/><circle cx="12" cy="17" r="1.4" fill="currentColor"/><circle cx="16" cy="17" r="1.4" fill="currentColor"/></svg>' },
     { id: 'user', name: 'Пользователь', ic: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4.5 20 C 5.5 15.5 8.5 14 12 14 C 15.5 14 18.5 15.5 19.5 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' },
+    { id: 'corners', name: 'Горячие углы', ic: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 9 L9 9 L9 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="6.5" r="1.2" fill="currentColor"/></svg>' },
+    { id: 'data', name: 'Данные', ic: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 6 L5 18 C5 19.7 8.1 21 12 21 C15.9 21 19 19.7 19 18 L19 6 M5 12 C5 13.7 8.1 15 12 15 C15.9 15 19 13.7 19 12" fill="none" stroke="currentColor" stroke-width="2"/></svg>' },
     { id: 'notif', name: 'Уведомления', ic: '<svg viewBox="0 0 24 24"><path d="M6 16 L6 10 A 6 6 0 0 1 18 10 L 18 16 L 20 18 L 4 18 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 21 C 10.5 22 13.5 22 14 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>' },
     { id: 'about', name: 'О системе', ic: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11 L12 16.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="7.8" r="1.4" fill="currentColor"/></svg>' },
     { id: 'reset', name: 'Сброс', ic: '<svg viewBox="0 0 24 24"><path d="M4 12 A 8 8 0 1 1 6.3 17.7 M 4 20 L 4 14 L 10 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
@@ -223,6 +225,136 @@
           input.addEventListener('blur', commit);
           input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') commit(); });
           main.appendChild(card);
+
+          // пароль экрана блокировки
+          const hasPass = !!s.get('passHash');
+          const card2 = el('div', 'st-card');
+          const prow = el('div', 'st-row');
+          prow.innerHTML = `<div><div class="lbl">Пароль экрана блокировки</div>
+            <div class="sub">${hasPass ? 'Установлен — запрашивается при входе' : 'Не установлен. Простая защита от посторонних глаз'}</div></div><div class="sp"></div>`;
+          const pbtn = el('button', 'ui-btn' + (hasPass ? ' danger' : ' primary'), hasPass ? 'Убрать' : 'Установить…');
+          pbtn.addEventListener('click', async () => {
+            if (hasPass) {
+              const cur = await OS.dialog.prompt('Убрать пароль', 'Введи текущий пароль:', '', { password: true });
+              if (cur === null) return;
+              if (OS.hashPass(cur) !== s.get('passHash')) { OS.dialog.alert('Неверный пароль', 'Попробуй ещё раз.'); return; }
+              s.set('passHash', '');
+              render();
+              return;
+            }
+            const p1 = await OS.dialog.prompt('Новый пароль', 'Придумай пароль (мин. 3 символа):', '', { password: true });
+            if (p1 === null) return;
+            if (String(p1).length < 3) { OS.dialog.alert('Слишком короткий', 'Нужно хотя бы 3 символа.'); return; }
+            const p2 = await OS.dialog.prompt('Повтори пароль', 'Ещё раз, для надёжности:', '', { password: true });
+            if (p2 === null) return;
+            if (p1 !== p2) { OS.dialog.alert('Пароли не совпали', 'Попробуй заново.'); return; }
+            s.set('passHash', OS.hashPass(p1));
+            OS.notify({ title: 'Настройки', body: 'Пароль установлен 🔒', appId: 'settings' });
+            render();
+          });
+          prow.appendChild(pbtn);
+          card2.appendChild(prow);
+          main.appendChild(card2);
+        }
+
+        else if (section === 'corners') {
+          const NAMES = { tl: 'Левый верхний', tr: 'Правый верхний', bl: 'Левый нижний', br: 'Правый нижний' };
+          const OPTS = [
+            ['', 'Выключено'], ['mission', 'Обзор окон'], ['desktop', 'Показать стол'],
+            ['search', 'Поиск'], ['apps', 'Все приложения'], ['lock', 'Заблокировать'],
+          ];
+          const hc = { tl: '', tr: '', bl: '', br: '', ...s.get('hotCorners', {}) };
+          const card = el('div', 'st-card');
+          card.innerHTML = `<div class="sub" style="padding:2px 0 8px">Прикоснись курсором к углу экрана — сработает действие.</div>`;
+          Object.keys(NAMES).forEach(k => {
+            const row = el('div', 'st-row');
+            row.innerHTML = `<div class="lbl">${NAMES[k]}</div><div class="sp"></div>
+              <select class="ui-select">${OPTS.map(([v, n]) => `<option value="${v}" ${hc[k] === v ? 'selected' : ''}>${n}</option>`).join('')}</select>`;
+            row.querySelector('select').addEventListener('change', (e) => {
+              const cur = { ...s.get('hotCorners', {}) };
+              cur[k] = e.target.value;
+              s.set('hotCorners', cur);
+            });
+            card.appendChild(row);
+          });
+          main.appendChild(card);
+        }
+
+        else if (section === 'data') {
+          const card = el('div', 'st-card');
+          const r1 = el('div', 'st-row');
+          r1.innerHTML = `<div><div class="lbl">Экспорт системы</div><div class="sub">Файлы, настройки и виджеты — в один JSON-файл</div></div><div class="sp"></div>`;
+          const exBtn = el('button', 'ui-btn primary', 'Экспортировать');
+          exBtn.addEventListener('click', () => {
+            try {
+              const dump = {
+                hinoma: OS.VERSION,
+                exported: new Date().toISOString(),
+                settings: JSON.parse(localStorage.getItem('hinoma.settings.v1') || '{}'),
+                vfs: JSON.parse(localStorage.getItem('hinoma.vfs.v1') || 'null'),
+                notifications: JSON.parse(localStorage.getItem('hinoma.notifications.v1') || '[]'),
+              };
+              const blob = new Blob([JSON.stringify(dump)], { type: 'application/json' });
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = `hinomaOS-backup-${new Date().toISOString().slice(0, 10)}.json`;
+              a.click();
+              setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+              OS.notify({ title: 'Данные', body: 'Резервная копия сохранена в загрузки браузера', appId: 'settings' });
+            } catch (e) { OS.dialog.alert('Не удалось экспортировать', e.message); }
+          });
+          r1.appendChild(exBtn);
+          card.appendChild(r1);
+
+          const r2 = el('div', 'st-row');
+          r2.innerHTML = `<div><div class="lbl">Импорт системы</div><div class="sub">Восстановление из JSON-файла (заменит текущие данные)</div></div><div class="sp"></div>`;
+          const imBtn = el('button', 'ui-btn', 'Импортировать…');
+          const fileIn = el('input');
+          fileIn.type = 'file';
+          fileIn.accept = '.json,application/json';
+          fileIn.style.display = 'none';
+          fileIn.addEventListener('change', () => {
+            const f = fileIn.files && fileIn.files[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = async () => {
+              try {
+                const dump = JSON.parse(reader.result);
+                if (!dump || !dump.hinoma || !dump.vfs) throw new Error('Это не файл резервной копии hinomaOS');
+                const ok = await OS.dialog.confirm('Импортировать данные?',
+                  `Копия от ${dump.exported ? dump.exported.slice(0, 10) : '—'}. Текущие файлы и настройки будут заменены.`,
+                  { okLabel: 'Импортировать', danger: true });
+                if (!ok) return;
+                localStorage.setItem('hinoma.settings.v1', JSON.stringify(dump.settings || {}));
+                localStorage.setItem('hinoma.vfs.v1', JSON.stringify(dump.vfs));
+                localStorage.setItem('hinoma.notifications.v1', JSON.stringify(dump.notifications || []));
+                location.reload();
+              } catch (e) { OS.dialog.alert('Не удалось импортировать', e.message); }
+            };
+            reader.readAsText(f);
+            fileIn.value = '';
+          });
+          imBtn.addEventListener('click', () => fileIn.click());
+          r2.appendChild(imBtn);
+          r2.appendChild(fileIn);
+          card.appendChild(r2);
+          main.appendChild(card);
+
+          const bak = OS.vfs.backupInfo();
+          const card2 = el('div', 'st-card');
+          const r3 = el('div', 'st-row');
+          r3.innerHTML = `<div><div class="lbl">Автокопия файловой системы</div>
+            <div class="sub">${bak ? `Есть, ${OS.fmtBytes(bak.size)} — обновляется автоматически` : 'Ещё не создана'}</div></div><div class="sp"></div>`;
+          const rsBtn = el('button', 'ui-btn', 'Восстановить');
+          rsBtn.disabled = !bak;
+          rsBtn.addEventListener('click', async () => {
+            const ok = await OS.dialog.confirm('Восстановить файлы из автокопии?', 'Текущее содержимое файловой системы будет заменено.', { okLabel: 'Восстановить', danger: true });
+            if (!ok) return;
+            try { OS.vfs.restoreFromBackup(); } catch (e) { OS.dialog.alert('Не получилось', e.message); }
+          });
+          r3.appendChild(rsBtn);
+          card2.appendChild(r3);
+          main.appendChild(card2);
         }
 
         else if (section === 'notif') {

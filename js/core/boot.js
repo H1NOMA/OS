@@ -31,14 +31,18 @@
     lock.style.backgroundImage = `url("${OS.wallpapers.uriFor(OS.settings.get('wallpaper'))}")`;
 
     const name = OS.settings.get('userName');
+    const passHash = OS.settings.get('passHash', '');
     lock.innerHTML = `
       <div class="lock-time">--:--</div>
       <div class="lock-date"></div>
       <div class="lock-user">
         <div class="lock-avatar">${esc(name.slice(0, 1).toUpperCase())}</div>
         <div class="lock-name">${esc(name)}</div>
-        <button class="lock-enter">Войти</button>
-        <div class="lock-hint">или нажмите Enter</div>
+        ${passHash
+          ? `<div class="lock-pass-row"><input type="password" class="lock-pass" placeholder="Пароль" spellcheck="false"></div>
+             <div class="lock-hint">Enter — войти</div>`
+          : `<button class="lock-enter">Войти</button>
+             <div class="lock-hint">или нажмите Enter</div>`}
       </div>`;
 
     const DOW_FULL = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
@@ -62,8 +66,26 @@
       setTimeout(() => { lock.classList.add('hidden'); lock.innerHTML = ''; }, 560);
       enterDesktop();
     };
-    const onKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); unlock(); } };
-    lock.querySelector('.lock-enter').addEventListener('click', unlock);
+    const tryUnlock = () => {
+      if (!passHash) { unlock(); return; }
+      const input = lock.querySelector('.lock-pass');
+      if (OS.hashPass(input.value) === passHash) { unlock(); return; }
+      // неверный пароль — встряска
+      const userBox = lock.querySelector('.lock-user');
+      userBox.classList.remove('shake');
+      void userBox.offsetWidth;
+      userBox.classList.add('shake');
+      input.value = '';
+      input.focus();
+    };
+    const onKey = (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); tryUnlock(); }
+      else if (e.key === ' ' && !passHash) { e.preventDefault(); unlock(); }
+    };
+    const enterBtn = lock.querySelector('.lock-enter');
+    if (enterBtn) enterBtn.addEventListener('click', unlock);
+    const passInput = lock.querySelector('.lock-pass');
+    if (passInput) setTimeout(() => passInput.focus(), 400);
     document.addEventListener('keydown', onKey);
   }
 
