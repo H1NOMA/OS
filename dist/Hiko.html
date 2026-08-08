@@ -4133,7 +4133,8 @@ img { -webkit-user-drag: none; }
 
   function ccOutside(e) {
     if (ccEl && !ccEl.contains(e.target) &&
-        !e.target.closest('#mb-cc') && !e.target.closest('#mb-clock') && !e.target.closest('#mb-vpn')) ccClose();
+        !e.target.closest('#mb-cc') && !e.target.closest('#mb-clock') &&
+        !e.target.closest('#mb-vpn') && !e.target.closest('#mb-battery')) ccClose();
   }
   function ccClose() {
     stopCCTick();
@@ -4205,6 +4206,7 @@ img { -webkit-user-drag: none; }
 
   OS.on('os:notify', (n) => {
     if (OS.settings.get('dnd')) return;
+    if (ccEl) return; // Центр управления открыт — уведомление уже видно в его списке
     const zone = document.getElementById('toasts');
     if (!zone) return;
     const t = el('div', 'toast', `
@@ -4219,7 +4221,11 @@ img { -webkit-user-drag: none; }
     setTimeout(dismiss, 5200);
   });
 
-  function closeAllPanels() { ccClose(); cpClose(); }
+  function closeAllPanels() {
+    ccClose();
+    cpClose();
+    if (OS.assistant && OS.assistant.close) OS.assistant.close(); // не оставляем панель ассистента под другими
+  }
 
   /* ==================== ПРИВЯЗКИ ==================== */
 
@@ -4276,7 +4282,8 @@ img { -webkit-user-drag: none; }
     const band = e.clientY > 56 && e.clientY < innerHeight - 56; // не мешаем углам
     if (atEdge && band && !ccEl && !edgeT && !e.buttons) {
       edgeT = setTimeout(() => { edgeT = null; if (!ccEl) ccToggle(); }, 220);
-    } else if (!atEdge && edgeT) {
+    } else if (edgeT && (!atEdge || !band)) {
+      // ушли с края ИЛИ в зону угла (band=false) — снимаем взвод, не мешаем углам
       clearTimeout(edgeT); edgeT = null;
     }
   });
@@ -5249,6 +5256,10 @@ img { -webkit-user-drag: none; }
 
   const byId = (id) => providers.find(p => p.id === id) || null;
 
+  // система уже загрузилась? (при старте boot.loadUserApps повторно выполняет
+  // модули из /Apps — тогда «модуль готов» показывать не нужно)
+  const bootDone = () => { const b = document.getElementById('boot'); return !b || b.classList.contains('hidden'); };
+
   function active() {
     return byId(S.get('vpnProvider', '')) || providers[0] || null;
   }
@@ -5263,11 +5274,14 @@ img { -webkit-user-drag: none; }
     providers.push(p);
     if (!S.get('vpnProvider', '')) S.set('vpnProvider', p.id);
     OS.emit('net:providers', list());
-    OS.notify({
-      title: 'Обход блокировок',
-      body: `Модуль «${p.name || p.id}»${p.region ? ' · ' + p.region : ''} готов. Включи его в Центре управления.`,
-      appId: 'net',
-    });
+    // тост только при установке в работающей системе, не при каждом старте
+    if (!p.quiet && bootDone()) {
+      OS.notify({
+        title: 'Обход блокировок',
+        body: `Модуль «${p.name || p.id}»${p.region ? ' · ' + p.region : ''} готов. Включи его в Центре управления.`,
+        appId: 'net',
+      });
+    }
     return true;
   }
 
@@ -9772,7 +9786,12 @@ img { -webkit-user-drag: none; }
     } catch (e) {
       OS.notify({ title: 'Ави', body: '⚠ ' + (e.message || e), appId: 'avi' });
     } finally {
-      if (OS.aura) OS.aura.pulse(1400);
+      // если Ави говорит — свечением управляет say() (гасит по окончании речи);
+      // сами гасим только когда речи нет (ошибка/молчаливая команда)
+      if (OS.aura) {
+        const talking = window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending);
+        if (!talking) OS.aura.pulse(1200);
+      }
       setTimeout(() => { busy = false; }, 600);
     }
   }

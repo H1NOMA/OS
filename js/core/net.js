@@ -15,6 +15,10 @@
 
   const byId = (id) => providers.find(p => p.id === id) || null;
 
+  // система уже загрузилась? (при старте boot.loadUserApps повторно выполняет
+  // модули из /Apps — тогда «модуль готов» показывать не нужно)
+  const bootDone = () => { const b = document.getElementById('boot'); return !b || b.classList.contains('hidden'); };
+
   function active() {
     return byId(S.get('vpnProvider', '')) || providers[0] || null;
   }
@@ -29,11 +33,14 @@
     providers.push(p);
     if (!S.get('vpnProvider', '')) S.set('vpnProvider', p.id);
     OS.emit('net:providers', list());
-    OS.notify({
-      title: 'Обход блокировок',
-      body: `Модуль «${p.name || p.id}»${p.region ? ' · ' + p.region : ''} готов. Включи его в Центре управления.`,
-      appId: 'net',
-    });
+    // тост только при установке в работающей системе, не при каждом старте
+    if (!p.quiet && bootDone()) {
+      OS.notify({
+        title: 'Обход блокировок',
+        body: `Модуль «${p.name || p.id}»${p.region ? ' · ' + p.region : ''} готов. Включи его в Центре управления.`,
+        appId: 'net',
+      });
+    }
     return true;
   }
 

@@ -345,7 +345,8 @@
 
   function ccOutside(e) {
     if (ccEl && !ccEl.contains(e.target) &&
-        !e.target.closest('#mb-cc') && !e.target.closest('#mb-clock') && !e.target.closest('#mb-vpn')) ccClose();
+        !e.target.closest('#mb-cc') && !e.target.closest('#mb-clock') &&
+        !e.target.closest('#mb-vpn') && !e.target.closest('#mb-battery')) ccClose();
   }
   function ccClose() {
     stopCCTick();
@@ -417,6 +418,7 @@
 
   OS.on('os:notify', (n) => {
     if (OS.settings.get('dnd')) return;
+    if (ccEl) return; // Центр управления открыт — уведомление уже видно в его списке
     const zone = document.getElementById('toasts');
     if (!zone) return;
     const t = el('div', 'toast', `
@@ -431,7 +433,11 @@
     setTimeout(dismiss, 5200);
   });
 
-  function closeAllPanels() { ccClose(); cpClose(); }
+  function closeAllPanels() {
+    ccClose();
+    cpClose();
+    if (OS.assistant && OS.assistant.close) OS.assistant.close(); // не оставляем панель ассистента под другими
+  }
 
   /* ==================== ПРИВЯЗКИ ==================== */
 
@@ -488,7 +494,8 @@
     const band = e.clientY > 56 && e.clientY < innerHeight - 56; // не мешаем углам
     if (atEdge && band && !ccEl && !edgeT && !e.buttons) {
       edgeT = setTimeout(() => { edgeT = null; if (!ccEl) ccToggle(); }, 220);
-    } else if (!atEdge && edgeT) {
+    } else if (edgeT && (!atEdge || !band)) {
+      // ушли с края ИЛИ в зону угла (band=false) — снимаем взвод, не мешаем углам
       clearTimeout(edgeT); edgeT = null;
     }
   });

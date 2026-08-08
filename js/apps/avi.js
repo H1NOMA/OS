@@ -435,7 +435,12 @@
     } catch (e) {
       OS.notify({ title: 'Ави', body: '⚠ ' + (e.message || e), appId: 'avi' });
     } finally {
-      if (OS.aura) OS.aura.pulse(1400);
+      // если Ави говорит — свечением управляет say() (гасит по окончании речи);
+      // сами гасим только когда речи нет (ошибка/молчаливая команда)
+      if (OS.aura) {
+        const talking = window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending);
+        if (!talking) OS.aura.pulse(1200);
+      }
       setTimeout(() => { busy = false; }, 600);
     }
   }
