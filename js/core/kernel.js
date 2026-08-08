@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.1';
+  const VERSION = '1.2';
   const CODENAME = 'Nova';
 
   /* ---------- шина событий ---------- */
@@ -89,6 +89,10 @@
     wifi: true,
     bluetooth: true,
     dnd: false,                 // не беспокоить
+    vpnOn: false,               // «обход блокировок» включён
+    vpnProvider: '',            // id активного модуля обхода
+    vpnProxyBase: 'https://corsproxy.io/?url=', // прокси демо-модуля (можно менять)
+    ccEdgeReveal: true,         // открывать Центр управления наведением на правый край
     passHash: '',               // пароль экрана блокировки (простой хэш)
     hotCorners: { tl: 'mission', tr: '', bl: '', br: '' },
     dockPinned: ['finder', 'browser', 'textedit', 'terminal', 'calculator', 'paint', 'photos', 'minesweeper', 'taskmgr', 'settings'],
@@ -329,6 +333,9 @@
     bluetooth: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 30 32 L 68 66 L 50 82 L 50 18 L 68 34 L 30 68" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
     battery: `<svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="10" width="78" height="40" rx="10" fill="none" stroke="currentColor" stroke-width="6" opacity=".5"/><rect x="10" y="16" width="58" height="28" rx="6" fill="currentColor"/><path d="M 88 22 C 93 24 93 36 88 38" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round" opacity=".5"/></svg>`,
     cc: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="16" width="80" height="28" rx="14" fill="none" stroke="currentColor" stroke-width="7"/><circle cx="30" cy="30" r="9" fill="currentColor"/><rect x="10" y="56" width="80" height="28" rx="14" fill="none" stroke="currentColor" stroke-width="7"/><circle cx="70" cy="70" r="9" fill="currentColor"/></svg>`,
+    globe: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="7"/><ellipse cx="50" cy="50" rx="17" ry="38" fill="none" stroke="currentColor" stroke-width="7"/><path d="M 13 38 H 87 M 13 62 H 87" stroke="currentColor" stroke-width="7" fill="none"/></svg>`,
+    bolt: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 56 6 L 26 56 L 48 56 L 44 94 L 74 44 L 52 44 Z" fill="currentColor"/></svg>`,
+    lock: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="24" y="44" width="52" height="42" rx="9" fill="currentColor"/><path d="M 34 44 L 34 32 C 34 20 42 13 50 13 C 58 13 66 20 66 32 L 66 44" fill="none" stroke="currentColor" stroke-width="8"/></svg>`,
     moon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 62 12 A 40 40 0 1 0 88 62 A 34 34 0 0 1 62 12 Z" fill="currentColor"/></svg>`,
     sun: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="19" fill="currentColor"/><g stroke="currentColor" stroke-width="7" stroke-linecap="round"><path d="M 50 8 L 50 20"/><path d="M 50 80 L 50 92"/><path d="M 8 50 L 20 50"/><path d="M 80 50 L 92 50"/><path d="M 20 20 L 28 28"/><path d="M 72 72 L 80 80"/><path d="M 80 20 L 72 28"/><path d="M 28 72 L 20 80"/></g></svg>`,
     grid: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="currentColor"><rect x="14" y="14" width="20" height="20" rx="5"/><rect x="40" y="14" width="20" height="20" rx="5"/><rect x="66" y="14" width="20" height="20" rx="5"/><rect x="14" y="40" width="20" height="20" rx="5"/><rect x="40" y="40" width="20" height="20" rx="5"/><rect x="66" y="40" width="20" height="20" rx="5"/><rect x="14" y="66" width="20" height="20" rx="5"/><rect x="40" y="66" width="20" height="20" rx="5"/><rect x="66" y="66" width="20" height="20" rx="5"/></g></svg>`,

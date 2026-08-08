@@ -693,12 +693,16 @@ img { -webkit-user-drag: none; }
    CONTROL CENTER
    ============================================================ */
 
+/* Центр управления — боковая панель, выезжает справа во всю высоту */
 #control-center {
   position: fixed;
-  top: calc(var(--menubar-h) + 8px);
-  right: 10px;
-  width: 330px;
-  padding: 12px;
+  top: calc(var(--menubar-h) + 6px);
+  right: 8px;
+  bottom: 8px;
+  width: 344px;
+  max-width: calc(100vw - 16px);
+  padding: 14px;
+  overflow-y: auto;
   background: var(--glass-strong);
   backdrop-filter: blur(50px) saturate(180%);
   -webkit-backdrop-filter: blur(50px) saturate(180%);
@@ -706,42 +710,84 @@ img { -webkit-user-drag: none; }
   border-radius: var(--r-panel);
   box-shadow: var(--shadow-panel);
   z-index: 9200;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  animation: menu-in .16s var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: cc-in .28s var(--ease-out);
   font-size: 13px;
 }
-.cc-module {
-  background: var(--ctl-bg);
-  border-radius: 13px;
-  padding: 11px;
+@keyframes cc-in { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
+#control-center.panel-out { transform: translateX(26px) !important; opacity: 0 !important; }
+#control-center::-webkit-scrollbar { width: 8px; }
+#control-center::-webkit-scrollbar-thumb { background: var(--ctl-bg-hover); border-radius: 8px; }
+
+.cc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 2px 4px 0; }
+.cc-clock { font-size: 34px; font-weight: 800; letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums; }
+.cc-sub { font-size: 12.5px; color: var(--text-2); margin-top: 4px; text-transform: capitalize; }
+.cc-greet { font-size: 12.5px; color: var(--accent); font-weight: 700; text-align: right; line-height: 1.35; }
+
+.cc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cc-tile {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 11px; border-radius: 14px;
+  background: var(--ctl-bg); cursor: default;
+  transition: background .15s;
+  min-width: 0;
 }
-.cc-span2 { grid-column: span 2; }
-.cc-toggle-row {
-  display: flex; align-items: center;
-  gap: 10px;
-  padding: 5px 0;
-}
-.cc-toggle-icon {
-  width: 30px; height: 30px;
-  flex: none;
-  border-radius: 50%;
+.cc-tile:hover { background: var(--ctl-bg-hover); }
+.cc-tile .ic {
+  width: 32px; height: 32px; flex: none; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  background: var(--ctl-bg-hover);
-  color: var(--text-2);
+  background: var(--ctl-bg-hover); color: var(--text-2);
   transition: background .2s, color .2s;
 }
-.cc-toggle-icon.on { background: var(--accent); color: var(--on-accent); }
-.cc-toggle-icon svg { width: 16px; height: 16px; }
-.cc-toggle-row .cc-t-name { font-weight: 600; }
-.cc-toggle-row .cc-t-state { font-size: 11.5px; color: var(--text-2); }
-.cc-label {
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text);
+.cc-tile .ic svg { width: 17px; height: 17px; }
+.cc-tile.on .ic { background: var(--accent); color: var(--on-accent); }
+.cc-tile .tx { min-width: 0; }
+.cc-tile .nm { font-weight: 600; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-tile .st { font-size: 11px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.cc-vpn {
+  display: flex; align-items: center; gap: 11px;
+  padding: 12px 13px; border-radius: 15px;
+  background: var(--ctl-bg);
+  transition: box-shadow .2s, background .2s;
 }
+.cc-vpn.on { box-shadow: inset 0 0 0 1.5px var(--accent); background: var(--accent-soft); }
+.cc-vpn .ic {
+  width: 36px; height: 36px; flex: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--ctl-bg-hover); color: var(--text-2);
+}
+.cc-vpn .ic svg { width: 20px; height: 20px; }
+.cc-vpn.on .ic { background: var(--accent); color: var(--on-accent); }
+.cc-vpn .tx { flex: 1; min-width: 0; }
+.cc-vpn .nm { font-weight: 700; font-size: 13px; }
+.cc-vpn .st { font-size: 11.5px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-vpn .cc-vpn-get { flex: none; padding: 6px 12px; }
+
+.cc-sliders { display: flex; flex-direction: column; gap: 6px; }
+.cc-slider { display: flex; align-items: center; gap: 11px; padding: 4px 4px; }
+.cc-slider > svg { width: 17px; height: 17px; flex: none; color: var(--text-2); }
+.cc-slider .ui-slider { flex: 1; }
+
+.cc-actions { display: flex; gap: 8px; }
+.cc-act {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 11px 4px; border-radius: 13px; background: var(--ctl-bg); cursor: default;
+  transition: background .15s;
+}
+.cc-act:hover { background: var(--ctl-bg-hover); }
+.cc-act svg { width: 18px; height: 18px; color: var(--text); }
+.cc-act span { font-size: 11px; color: var(--text-2); }
+
+.cc-cal { background: var(--ctl-bg); border-radius: 14px; padding: 12px 13px; }
+.cc-notif .notif-head { margin-top: 2px; }
+
+.mb-item .mb-bolt { display: inline-flex; width: 8px; height: 13px; margin-right: 1px; }
+.mb-item .mb-bolt svg { width: 100% !important; height: 100% !important; color: #57e18a; opacity: 1; }
+#mb-vpn.on { color: var(--accent); }
+#mb-vpn.on svg { opacity: 1; }
 
 /* слайдер macOS-стиля */
 .ui-slider {
@@ -1411,7 +1457,7 @@ img { -webkit-user-drag: none; }
 (function () {
   'use strict';
 
-  const VERSION = '1.1';
+  const VERSION = '1.2';
   const CODENAME = 'Nova';
 
   /* ---------- шина событий ---------- */
@@ -1494,6 +1540,10 @@ img { -webkit-user-drag: none; }
     wifi: true,
     bluetooth: true,
     dnd: false,                 // не беспокоить
+    vpnOn: false,               // «обход блокировок» включён
+    vpnProvider: '',            // id активного модуля обхода
+    vpnProxyBase: 'https://corsproxy.io/?url=', // прокси демо-модуля (можно менять)
+    ccEdgeReveal: true,         // открывать Центр управления наведением на правый край
     passHash: '',               // пароль экрана блокировки (простой хэш)
     hotCorners: { tl: 'mission', tr: '', bl: '', br: '' },
     dockPinned: ['finder', 'browser', 'textedit', 'terminal', 'calculator', 'paint', 'photos', 'minesweeper', 'taskmgr', 'settings'],
@@ -1734,6 +1784,9 @@ img { -webkit-user-drag: none; }
     bluetooth: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 30 32 L 68 66 L 50 82 L 50 18 L 68 34 L 30 68" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
     battery: `<svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="10" width="78" height="40" rx="10" fill="none" stroke="currentColor" stroke-width="6" opacity=".5"/><rect x="10" y="16" width="58" height="28" rx="6" fill="currentColor"/><path d="M 88 22 C 93 24 93 36 88 38" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round" opacity=".5"/></svg>`,
     cc: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="16" width="80" height="28" rx="14" fill="none" stroke="currentColor" stroke-width="7"/><circle cx="30" cy="30" r="9" fill="currentColor"/><rect x="10" y="56" width="80" height="28" rx="14" fill="none" stroke="currentColor" stroke-width="7"/><circle cx="70" cy="70" r="9" fill="currentColor"/></svg>`,
+    globe: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="7"/><ellipse cx="50" cy="50" rx="17" ry="38" fill="none" stroke="currentColor" stroke-width="7"/><path d="M 13 38 H 87 M 13 62 H 87" stroke="currentColor" stroke-width="7" fill="none"/></svg>`,
+    bolt: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 56 6 L 26 56 L 48 56 L 44 94 L 74 44 L 52 44 Z" fill="currentColor"/></svg>`,
+    lock: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="24" y="44" width="52" height="42" rx="9" fill="currentColor"/><path d="M 34 44 L 34 32 C 34 20 42 13 50 13 C 58 13 66 20 66 32 L 66 44" fill="none" stroke="currentColor" stroke-width="8"/></svg>`,
     moon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 62 12 A 40 40 0 1 0 88 62 A 34 34 0 0 1 62 12 Z" fill="currentColor"/></svg>`,
     sun: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="19" fill="currentColor"/><g stroke="currentColor" stroke-width="7" stroke-linecap="round"><path d="M 50 8 L 50 20"/><path d="M 50 80 L 50 92"/><path d="M 8 50 L 20 50"/><path d="M 80 50 L 92 50"/><path d="M 20 20 L 28 28"/><path d="M 72 72 L 80 80"/><path d="M 80 20 L 72 28"/><path d="M 28 72 L 20 80"/></g></svg>`,
     grid: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="currentColor"><rect x="14" y="14" width="20" height="20" rx="5"/><rect x="40" y="14" width="20" height="20" rx="5"/><rect x="66" y="14" width="20" height="20" rx="5"/><rect x="14" y="40" width="20" height="20" rx="5"/><rect x="40" y="40" width="20" height="20" rx="5"/><rect x="66" y="40" width="20" height="20" rx="5"/><rect x="14" y="66" width="20" height="20" rx="5"/><rect x="40" y="66" width="20" height="20" rx="5"/><rect x="66" y="66" width="20" height="20" rx="5"/></g></svg>`,
@@ -3145,8 +3198,9 @@ img { -webkit-user-drag: none; }
       { id: 'mb-search', html: OS.icons.search, title: 'Поиск (Alt+Space)', click: () => OS.emit('spotlight:toggle') },
       { id: 'mb-mission', html: OS.icons.mission, title: 'Обзор окон (F3)', click: () => OS.wm.missionToggle() },
       { id: 'mb-wifi', html: OS.icons.wifi, title: 'Wi-Fi', click: (e, n) => toggleQuick(n, 'wifi') },
-      { id: 'mb-battery', html: `<span style="font-size:11.5px;font-weight:600;">100%</span>` + OS.icons.battery, title: 'Аккумулятор' },
-      { id: 'mb-cc', html: OS.icons.cc, title: 'Быстрые настройки', click: () => OS.emit('cc:toggle') },
+      { id: 'mb-vpn', html: OS.icons.globe, title: 'Обход блокировок включён', click: () => OS.emit('cc:toggle') },
+      { id: 'mb-battery', html: `<span style="font-size:11.5px;font-weight:600;">100%</span>` + OS.icons.battery, title: 'Аккумулятор', click: () => OS.emit('cc:toggle') },
+      { id: 'mb-cc', html: OS.icons.cc, title: 'Центр управления', click: () => OS.emit('cc:toggle') },
     ];
     right.forEach(cfg => {
       const item = el('div', 'mb-item', cfg.html);
@@ -3156,6 +3210,9 @@ img { -webkit-user-drag: none; }
       bar.appendChild(item);
     });
     updateWifiIcon();
+    updateVpnIndicator();
+    setupBattery();
+    applyBatteryUI();
 
     // — часы
     const clock = el('div', 'mb-item mb-clock');
@@ -3174,6 +3231,39 @@ img { -webkit-user-drag: none; }
     if (w) w.style.opacity = OS.settings.get('wifi') ? '1' : '.35';
   }
   OS.on('settings:change', ({ key }) => { if (key === 'wifi') updateWifiIcon(); });
+
+  /* --- индикатор обхода блокировок (показывается только когда включён) --- */
+  function updateVpnIndicator() {
+    const v = document.getElementById('mb-vpn');
+    if (!v) return;
+    const on = OS.net ? OS.net.isOn() : false;
+    v.style.display = on ? '' : 'none';
+    v.classList.toggle('on', on);
+  }
+  OS.on('net:state', updateVpnIndicator);
+  OS.on('net:providers', updateVpnIndicator);
+
+  /* --- живой аккумулятор (Battery API, с запасным «100%») --- */
+  let batteryReady = false;
+  let batteryState = null; // { pct, charging }
+  function applyBatteryUI() {
+    const b = document.getElementById('mb-battery');
+    if (!b) return;
+    if (!batteryState) return; // остаётся дефолтный «100%»
+    const bolt = batteryState.charging ? `<span class="mb-bolt">${OS.icons.bolt}</span>` : '';
+    b.innerHTML = `<span style="font-size:11.5px;font-weight:600;">${batteryState.pct}%</span>${bolt}${OS.icons.battery}`;
+    b.title = 'Аккумулятор' + (batteryState.charging ? ' · заряжается' : '');
+  }
+  function setupBattery() {
+    if (batteryReady || !navigator.getBattery) return;
+    batteryReady = true;
+    navigator.getBattery().then(bat => {
+      const upd = () => { batteryState = { pct: Math.round(bat.level * 100), charging: bat.charging }; applyBatteryUI(); };
+      bat.addEventListener('levelchange', upd);
+      bat.addEventListener('chargingchange', upd);
+      upd();
+    }).catch(() => { /* нет доступа — оставим 100% */ });
+  }
 
   const DOW = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
   const MON = ['янв.', 'февр.', 'мар.', 'апр.', 'мая', 'июн.', 'июл.', 'авг.', 'сент.', 'окт.', 'нояб.', 'дек.'];
@@ -3882,81 +3972,180 @@ img { -webkit-user-drag: none; }
     setTimeout(() => n.remove(), 190);
   }
 
-  /* ==================== CONTROL CENTER ==================== */
+  /* ==================== ЦЕНТР УПРАВЛЕНИЯ (боковая панель справа) ==================== */
+
+  const SPK = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 14 38 L 34 38 L 56 20 L 56 80 L 34 62 L 14 62 Z" fill="currentColor"/><path d="M 68 36 C 76 44 76 56 68 64 M 76 28 C 90 42 90 58 76 72" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></svg>`;
+
+  const MON_FULL_CC = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  const greetWord = (h) => h < 5 ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
+
+  function calendarHTML() {
+    const d = new Date();
+    const year = d.getFullYear(), month = d.getMonth(), today = d.getDate();
+    const firstDow = (new Date(year, month, 1).getDay() + 6) % 7;
+    const daysIn = new Date(year, month + 1, 0).getDate();
+    const daysPrev = new Date(year, month, 0).getDate();
+    let cells = '';
+    ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'].forEach(dw => cells += `<div class="cal-dow">${dw}</div>`);
+    for (let i = 0; i < firstDow; i++) cells += `<div class="cal-day other">${daysPrev - firstDow + 1 + i}</div>`;
+    for (let day = 1; day <= daysIn; day++) cells += `<div class="cal-day ${day === today ? 'today' : ''}">${day}</div>`;
+    const tail = (7 - (firstDow + daysIn) % 7) % 7;
+    for (let i = 1; i <= tail; i++) cells += `<div class="cal-day other">${i}</div>`;
+    return `<div class="cal-head"><span class="cal-month">${MON_FULL_CC[month]}</span><span>${year}</span></div><div class="cal-grid">${cells}</div>`;
+  }
+  function notifHTML() {
+    const notifs = OS.getNotifications();
+    return `<div class="notif-head"><span>Уведомления</span>${notifs.length ? '<span class="notif-clear">Очистить</span>' : ''}</div>
+      <div class="notif-list">${notifs.length ? notifs.map(n => `
+        <div class="notif-item"><div class="t-icon">${appIconOf(n.appId)}</div>
+          <div><div class="t-title">${esc(n.title)}</div><div class="t-body">${esc(n.body)}</div></div></div>`).join('')
+        : `<div class="notif-empty">Нет новых уведомлений</div>`}</div>`;
+  }
 
   let ccEl = null;
+  let ccTick = null;
+
   function ccToggle() {
     if (ccEl) { ccClose(); return; }
     closeAllPanels();
     ccEl = el('div');
     ccEl.id = 'control-center';
-    const s = OS.settings;
-    const themeNow = document.documentElement.getAttribute('data-theme');
-    ccEl.innerHTML = `
-      <div class="cc-module cc-span2">
-        <div class="cc-toggle-row" data-t="wifi">
-          <div class="cc-toggle-icon ${s.get('wifi') ? 'on' : ''}">${OS.icons.wifi}</div>
-          <div><div class="cc-t-name">Wi-Fi</div><div class="cc-t-state">${s.get('wifi') ? 'Hiko_5G' : 'Выкл.'}</div></div>
-        </div>
-        <div class="cc-toggle-row" data-t="bluetooth">
-          <div class="cc-toggle-icon ${s.get('bluetooth') ? 'on' : ''}">${OS.icons.bluetooth}</div>
-          <div><div class="cc-t-name">Bluetooth</div><div class="cc-t-state">${s.get('bluetooth') ? 'Вкл.' : 'Выкл.'}</div></div>
-        </div>
-        <div class="cc-toggle-row" data-t="dnd">
-          <div class="cc-toggle-icon ${s.get('dnd') ? 'on' : ''}">${OS.icons.moon}</div>
-          <div><div class="cc-t-name">Не беспокоить</div><div class="cc-t-state">${s.get('dnd') ? 'Вкл.' : 'Выкл.'}</div></div>
-        </div>
-      </div>
-      <div class="cc-module" data-t="theme" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
-        <div class="cc-toggle-icon ${themeNow === 'dark' ? 'on' : ''}" style="width:38px;height:38px;">${themeNow === 'dark' ? OS.icons.moon : OS.icons.sun}</div>
-        <div class="cc-t-name" style="font-size:12px;">${themeNow === 'dark' ? 'Тёмная тема' : 'Светлая тема'}</div>
-      </div>
-      <div class="cc-module" data-t="nightlight" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
-        <div class="cc-toggle-icon ${s.get('nightLight') ? 'on' : ''}" style="width:38px;height:38px;">${OS.icons.sun}</div>
-        <div class="cc-t-name" style="font-size:12px;">Тёплый свет</div>
-      </div>
-      <div class="cc-module cc-span2">
-        <div class="cc-label">Яркость</div>
-        <input class="ui-slider" data-s="brightness" type="range" min="40" max="100" value="${Math.round(s.get('brightness') * 100)}">
-      </div>
-      <div class="cc-module cc-span2">
-        <div class="cc-label">Звук</div>
-        <input class="ui-slider" data-s="volume" type="range" min="0" max="100" value="${s.get('volume')}">
-      </div>`;
     document.body.appendChild(ccEl);
-
-    ccEl.querySelectorAll('[data-t]').forEach(row => {
-      row.addEventListener('click', () => {
-        const t = row.dataset.t;
-        if (t === 'theme') {
-          const cur = document.documentElement.getAttribute('data-theme');
-          OS.settings.set('theme', cur === 'dark' ? 'light' : 'dark');
-        } else if (t === 'nightlight') {
-          OS.settings.set('nightLight', !s.get('nightLight'));
-        } else {
-          OS.settings.set(t, !s.get(t));
-        }
-        if (ccEl) { ccEl.remove(); ccEl = null; document.removeEventListener('pointerdown', ccOutside, true); }
-        ccToggle(); // перерисовать без анимации закрытия
-      });
-    });
-    ccEl.querySelector('[data-s="brightness"]').addEventListener('input', (e) => {
-      OS.settings.set('brightness', (+e.target.value) / 100);
-    });
-    ccEl.querySelector('[data-s="volume"]').addEventListener('change', (e) => {
-      OS.settings.set('volume', +e.target.value);
-      OS.beep(660, .1);
-    });
+    renderCC();
+    startCCTick();
     setTimeout(() => document.addEventListener('pointerdown', ccOutside, true), 0);
   }
+
+  function renderCC() {
+    if (!ccEl) return;
+    const s = OS.settings;
+    const theme = document.documentElement.getAttribute('data-theme');
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2, '0'), mm = String(d.getMinutes()).padStart(2, '0');
+    const vpnOn = OS.net ? OS.net.isOn() : false;
+    const provs = OS.net ? OS.net.providers() : [];
+    const vp = provs.length ? (provs.find(x => x.id === OS.net.active()) || provs[0]) : null;
+
+    const tile = (t, on, ic, nm, st) =>
+      `<div class="cc-tile ${on ? 'on' : ''}" data-t="${t}"><div class="ic">${ic}</div>
+        <div class="tx"><div class="nm">${nm}</div><div class="st">${st}</div></div></div>`;
+
+    ccEl.innerHTML = `
+      <div class="cc-header">
+        <div><div class="cc-clock">${hh}:${mm}</div>
+          <div class="cc-sub">${esc(d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }))}</div></div>
+        <div class="cc-greet">${esc(greetWord(d.getHours()))}${s.get('userName') ? '<br>' + esc(s.get('userName')) : ''}</div>
+      </div>
+
+      <div class="cc-grid">
+        ${tile('wifi', s.get('wifi'), OS.icons.wifi, 'Wi-Fi', s.get('wifi') ? 'Hiko_5G' : 'Выкл.')}
+        ${tile('bluetooth', s.get('bluetooth'), OS.icons.bluetooth, 'Bluetooth', s.get('bluetooth') ? 'Вкл.' : 'Выкл.')}
+        ${tile('dnd', s.get('dnd'), OS.icons.moon, 'Не беспокоить', s.get('dnd') ? 'Вкл.' : 'Выкл.')}
+        ${tile('nightlight', s.get('nightLight'), OS.icons.sun, 'Тёплый свет', s.get('nightLight') ? 'Вкл.' : 'Выкл.')}
+        ${tile('theme', theme === 'dark', theme === 'dark' ? OS.icons.moon : OS.icons.sun, 'Тема', theme === 'dark' ? 'Тёмная' : 'Светлая')}
+        ${tile('edge', s.get('ccEdgeReveal'), OS.icons.cc, 'Панель у края', s.get('ccEdgeReveal') ? 'Вкл.' : 'Выкл.')}
+      </div>
+
+      <div class="cc-vpn ${vpnOn ? 'on' : ''}">
+        <div class="ic">${OS.icons.globe}</div>
+        <div class="tx"><div class="nm">Обход блокировок</div>
+          <div class="st">${vp ? (vpnOn ? 'Включён · ' + esc(vp.name) : 'Готов · ' + esc(vp.name)) : 'Нет модуля обхода'}</div></div>
+        ${vp ? `<div class="ui-switch ${vpnOn ? 'on' : ''}" data-vpn="1"></div>`
+             : `<button class="ui-btn cc-vpn-get">Модуль…</button>`}
+      </div>
+
+      <div class="cc-sliders">
+        <div class="cc-slider">${OS.icons.sun}<input class="ui-slider" data-s="brightness" type="range" min="40" max="100" value="${Math.round(s.get('brightness') * 100)}"></div>
+        <div class="cc-slider">${SPK}<input class="ui-slider" data-s="volume" type="range" min="0" max="100" value="${s.get('volume')}"></div>
+      </div>
+
+      <div class="cc-actions">
+        <div class="cc-act" data-a="spotlight">${OS.icons.search}<span>Поиск</span></div>
+        <div class="cc-act" data-a="mission">${OS.icons.mission}<span>Окна</span></div>
+        <div class="cc-act" data-a="assistant">${OS.icons.spark}<span>Ави</span></div>
+        <div class="cc-act" data-a="lock">${OS.icons.lock}<span>Замок</span></div>
+      </div>
+
+      <div class="cc-cal">${calendarHTML()}</div>
+      <div class="cc-notif">${notifHTML()}</div>`;
+
+    bindCC();
+  }
+
+  function bindCC() {
+    const s = OS.settings;
+    ccEl.querySelectorAll('.cc-tile[data-t]').forEach(row => row.addEventListener('click', () => {
+      const t = row.dataset.t;
+      if (t === 'theme') { const cur = document.documentElement.getAttribute('data-theme'); s.set('theme', cur === 'dark' ? 'light' : 'dark'); }
+      else if (t === 'nightlight') s.set('nightLight', !s.get('nightLight'));
+      else if (t === 'edge') s.set('ccEdgeReveal', !s.get('ccEdgeReveal'));
+      else s.set(t, !s.get(t));
+      renderCC();
+    }));
+    const sw = ccEl.querySelector('[data-vpn]');
+    if (sw) sw.addEventListener('click', async () => { await OS.net.toggle(); renderCC(); });
+    const getBtn = ccEl.querySelector('.cc-vpn-get');
+    if (getBtn) getBtn.addEventListener('click', ccVpnGet);
+    const br = ccEl.querySelector('[data-s="brightness"]');
+    if (br) br.addEventListener('input', (e) => s.set('brightness', (+e.target.value) / 100));
+    const vol = ccEl.querySelector('[data-s="volume"]');
+    if (vol) vol.addEventListener('change', (e) => { s.set('volume', +e.target.value); OS.beep(660, .1); });
+    ccEl.querySelectorAll('.cc-act[data-a]').forEach(a => a.addEventListener('click', () => {
+      const act = a.dataset.a;
+      ccClose();
+      if (act === 'spotlight') spotlightToggle();
+      else if (act === 'mission') OS.wm.missionToggle();
+      else if (act === 'assistant') OS.assistant.toggle();
+      else if (act === 'lock') OS.emit('session:lock');
+    }));
+    const clr = ccEl.querySelector('.notif-clear');
+    if (clr) clr.addEventListener('click', () => { OS.clearNotifications(); refreshNotif(); });
+  }
+
+  async function ccVpnGet() {
+    ccClose();
+    const demo = await OS.dialog.confirm('Модуль обхода',
+      'Скачай последнюю версию модуля обхода с GitHub и поставь её через Установщик («По ссылке…») — Hiko сам подхватит переключатель.\n\nИли поставить встроенный демо-модуль прямо сейчас, чтобы увидеть, как это работает?',
+      { okLabel: 'Поставить демо', cancelLabel: 'Открыть Установщик' });
+    if (demo) { OS.installer.installTrusted(OS.net.DEMO_CODE, 'obhod-demo.js'); }
+    else OS.launch('installer');
+  }
+
+  function refreshNotif() {
+    if (!ccEl) return;
+    const n = ccEl.querySelector('.cc-notif');
+    if (!n) return;
+    n.innerHTML = notifHTML();
+    const clr = n.querySelector('.notif-clear');
+    if (clr) clr.addEventListener('click', () => { OS.clearNotifications(); refreshNotif(); });
+  }
+
+  function startCCTick() {
+    stopCCTick();
+    ccTick = setInterval(() => {
+      if (!ccEl) { stopCCTick(); return; }
+      const d = new Date();
+      const c = ccEl.querySelector('.cc-clock');
+      if (c) c.textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }, 15000);
+  }
+  function stopCCTick() { if (ccTick) { clearInterval(ccTick); ccTick = null; } }
+
   function ccOutside(e) {
-    if (ccEl && !ccEl.contains(e.target) && !e.target.closest('#mb-cc')) ccClose();
+    if (ccEl && !ccEl.contains(e.target) &&
+        !e.target.closest('#mb-cc') && !e.target.closest('#mb-clock') && !e.target.closest('#mb-vpn')) ccClose();
   }
   function ccClose() {
+    stopCCTick();
     animateOut(ccEl);
     ccEl = null;
     document.removeEventListener('pointerdown', ccOutside, true);
   }
+
+  OS.on('net:providers', () => { if (ccEl) renderCC(); });
+  OS.on('net:state', () => { if (ccEl) renderCC(); });
+  OS.on('os:notify', refreshNotif);
+  OS.on('os:notify-cleared', refreshNotif);
 
   /* ==================== ЧАСЫ / КАЛЕНДАРЬ / УВЕДОМЛЕНИЯ ==================== */
 
@@ -4037,7 +4226,7 @@ img { -webkit-user-drag: none; }
   OS.on('spotlight:toggle', spotlightToggle);
   OS.on('launchpad:toggle', launchpadToggle);
   OS.on('cc:toggle', ccToggle);
-  OS.on('clockpanel:toggle', clockPanelToggle);
+  OS.on('clockpanel:toggle', ccToggle); // клик по часам открывает единый Центр управления
 
   document.addEventListener('keydown', (e) => {
     if (e.altKey && e.code === 'Space') {
@@ -4075,6 +4264,20 @@ img { -webkit-user-drag: none; }
       cornerAt = performance.now();
       cornerArmed = false;
       fn();
+    }
+  });
+
+  /* ==================== ОТКРЫТИЕ ПАНЕЛИ НАВЕДЕНИЕМ НА ПРАВЫЙ КРАЙ ==================== */
+
+  let edgeT = null;
+  document.addEventListener('mousemove', (e) => {
+    if (!OS.settings.get('ccEdgeReveal', true)) { if (edgeT) { clearTimeout(edgeT); edgeT = null; } return; }
+    const atEdge = e.clientX >= innerWidth - 1;
+    const band = e.clientY > 56 && e.clientY < innerHeight - 56; // не мешаем углам
+    if (atEdge && band && !ccEl && !edgeT && !e.buttons) {
+      edgeT = setTimeout(() => { edgeT = null; if (!ccEl) ccToggle(); }, 220);
+    } else if (!atEdge && edgeT) {
+      clearTimeout(edgeT); edgeT = null;
     }
   });
 
@@ -4804,6 +5007,12 @@ img { -webkit-user-drag: none; }
       u.volume = OS.settings.get('volume', 70) / 100;
       const ru = speechSynthesis.getVoices().find(v => v.lang && v.lang.startsWith('ru'));
       if (ru) u.voice = ru;
+      if (OS.aura) {
+        const est = Math.min(14000, 1200 + String(text).length * 70);
+        OS.aura.pulse(est);
+        u.onend = () => { if (OS.aura) OS.aura.pulse(350); };
+        u.onerror = () => { if (OS.aura) OS.aura.hide(); };
+      }
       speechSynthesis.speak(u);
       return true;
     } catch (e) { return false; }
@@ -4971,12 +5180,15 @@ img { -webkit-user-drag: none; }
     const mic = panel.querySelector('.as-mic');
     mic.addEventListener('click', async () => {
       mic.classList.add('listening');
+      if (OS.aura) OS.aura.show();
       try {
         const heard = provider && provider.listen ? await provider.listen() : await systemListen();
         mic.classList.remove('listening');
+        if (OS.aura) OS.aura.pulse(400);
         if (heard) submit(heard);
       } catch (e) {
         mic.classList.remove('listening');
+        if (OS.aura) OS.aura.pulse(300);
         addMsg('bot', '🎙 ' + (e.message || 'Не получилось послушать'));
       }
     });
@@ -5015,6 +5227,197 @@ img { -webkit-user-drag: none; }
     open, close, toggle,
     get provider() { return provider ? { id: provider.id, name: provider.name } : null; },
   };
+})();
+
+</script>
+  <script>
+/* === js/core/net.js === */
+/* ============================================================
+   Hiko OS · net — шина «Обход блокировок» (VPN-модули)
+   Точка подключения внешнего модуля обхода: скачиваешь .js с
+   GitHub, ставишь Установщиком — он вызывает OS.net.registerProvider,
+   и система сама выносит переключатель в Центр управления.
+   Честно: браузерная ОС не поднимает системный VPN — модуль
+   маршрутизирует встроенный Браузер Hiko (и приложения, которые
+   зовут OS.net.proxify) через свой прокси. Контракт — docs/NETWORK_API.md.
+   ============================================================ */
+(function () {
+  'use strict';
+  const S = OS.settings;
+
+  let providers = []; // { id, name, region?, note?, proxify?, enable?, disable?, test? }
+
+  const byId = (id) => providers.find(p => p.id === id) || null;
+
+  function active() {
+    return byId(S.get('vpnProvider', '')) || providers[0] || null;
+  }
+
+  function list() {
+    return providers.map(p => ({ id: p.id, name: p.name || p.id, region: p.region || '', note: p.note || '' }));
+  }
+
+  function registerProvider(p) {
+    if (!p || !p.id) { console.error('[net] модулю обхода нужен id'); return false; }
+    providers = providers.filter(x => x.id !== p.id);
+    providers.push(p);
+    if (!S.get('vpnProvider', '')) S.set('vpnProvider', p.id);
+    OS.emit('net:providers', list());
+    OS.notify({
+      title: 'Обход блокировок',
+      body: `Модуль «${p.name || p.id}»${p.region ? ' · ' + p.region : ''} готов. Включи его в Центре управления.`,
+      appId: 'net',
+    });
+    return true;
+  }
+
+  function isOn() { return !!S.get('vpnOn', false) && !!active(); }
+
+  async function setOn(on) {
+    on = !!on;
+    const p = active();
+    if (on && !p) {
+      OS.notify({ title: 'Обход блокировок', body: 'Нет модуля обхода. Установи его в Центре управления или через Установщик.', appId: 'net' });
+      S.set('vpnOn', false);
+      OS.emit('net:state', { on: false, provider: null });
+      return false;
+    }
+    try {
+      if (on && p && p.enable) await p.enable();
+      if (!on && p && p.disable) await p.disable();
+    } catch (e) {
+      OS.notify({ title: 'Обход блокировок', body: 'Модуль сообщил об ошибке: ' + (e.message || e), appId: 'net' });
+    }
+    S.set('vpnOn', on);
+    OS.emit('net:state', { on, provider: p ? { id: p.id, name: p.name } : null });
+    if (on) {
+      OS.notify({
+        title: 'Обход включён 🌐',
+        body: `Через «${p.name || p.id}»${p.region ? ' · ' + p.region : ''}. Иностранные сайты теперь открываются в Браузере Hiko.`,
+        appId: 'net',
+      });
+    }
+    return on;
+  }
+
+  function toggle() { return setOn(!isOn()); }
+
+  function setProvider(id) {
+    if (byId(id)) { S.set('vpnProvider', id); OS.emit('net:providers', list()); }
+  }
+
+  // приложения зовут это перед сетевым запросом; при выключенном обходе — no-op
+  function proxify(url) {
+    if (!isOn()) return url;
+    const p = active();
+    try { return (p && p.proxify) ? p.proxify(String(url)) : url; } catch (e) { return url; }
+  }
+
+  /* --- встроенный демо-модуль: показывает контракт и делает маршрутизацию реальной --- */
+  const DEMO_CODE = [
+    "(function () {",
+    "  'use strict';",
+    "  OS.net.registerProvider({",
+    "    id: 'demo-bypass',",
+    "    name: 'Обход (демо)',",
+    "    region: 'Auto',",
+    "    note: 'Пример модуля: маршрутизирует Браузер Hiko через веб-прокси. Адрес прокси меняется в Настройках.',",
+    "    proxify: function (url) {",
+    "      var base = OS.settings.get('vpnProxyBase', 'https://corsproxy.io/?url=');",
+    "      return base + encodeURIComponent(url);",
+    "    },",
+    "    enable: function () { /* демо: только маршрутизация Браузера, без системного VPN */ },",
+    "    disable: function () {}",
+    "  });",
+    "})();",
+  ].join('\n');
+
+  OS.net = {
+    registerProvider,
+    providers: list,
+    active: () => (active() ? active().id : null),
+    isOn, setOn, toggle, setProvider, proxify,
+    DEMO_CODE,
+  };
+})();
+
+</script>
+  <script>
+/* === js/core/aura.js === */
+/* ============================================================
+   Hiko OS · aura — цветное свечение по краям экрана, когда
+   активен голосовой помощник (в духе Apple Intelligence).
+   API: OS.aura.show() / hide() / pulse(ms).
+   ============================================================ */
+(function () {
+  'use strict';
+
+  OS.injectStyle('core-aura', `
+    #ai-aura {
+      position: fixed; inset: 0;
+      z-index: 9450; /* над окнами/панелями/тостами, но под меню(9500) и диалогами(9800) */
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .45s var(--ease-out);
+      will-change: opacity, filter, transform;
+    }
+    #ai-aura.on { opacity: .92; animation: aura-hue 6s linear infinite, aura-breathe 3s ease-in-out infinite; }
+    /* приём «градиентная рамка через маску»: показываем только полосу у краёв */
+    #ai-aura::before, #ai-aura::after {
+      content: "";
+      position: absolute; inset: 0;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+    }
+    #ai-aura::before {
+      padding: 66px;
+      background: conic-gradient(from 0deg,
+        #ff5f6d, #ffc371, #43e97b, #38f9d7, #4facfe, #b06bff, #ff5f6d);
+      filter: blur(34px);
+    }
+    #ai-aura::after {
+      padding: 26px;
+      background: conic-gradient(from 140deg,
+        #b06bff, #4facfe, #38f9d7, #43e97b, #ffc371, #ff5f6d, #b06bff);
+      filter: blur(11px);
+      opacity: .82;
+    }
+    @keyframes aura-hue { to { filter: hue-rotate(360deg); } }
+    @keyframes aura-breathe { 50% { transform: scale(1.006); } }
+  `);
+
+  let auraEl = null;
+  let hideT = null;
+
+  function ensure() {
+    if (!auraEl) {
+      auraEl = document.createElement('div');
+      auraEl.id = 'ai-aura';
+      document.body.appendChild(auraEl);
+    }
+    return auraEl;
+  }
+
+  function show() {
+    clearTimeout(hideT);
+    // reflow, чтобы transition сработал при повторном show
+    const n = ensure();
+    void n.offsetWidth;
+    n.classList.add('on');
+  }
+  function hide() {
+    clearTimeout(hideT);
+    if (auraEl) auraEl.classList.remove('on');
+  }
+  function pulse(ms) {
+    show();
+    clearTimeout(hideT);
+    hideT = setTimeout(hide, ms || 2200);
+  }
+
+  OS.aura = { show, hide, pulse };
 })();
 
 </script>
@@ -6749,17 +7152,24 @@ img { -webkit-user-drag: none; }
           if (blocked) blocked.remove();
         });
         loadTimer = setTimeout(() => { if (!loaded) showBlocked(target); }, 4500);
-        iframe.src = target;
+        // если включён «обход блокировок» — маршрутизируем через модуль
+        iframe.src = OS.net ? OS.net.proxify(target) : target;
       }
 
       function showBlocked(url) {
+        const vpnOff = OS.net && !OS.net.isOn() && OS.net.providers().length;
         const b = el('div', 'br-blocked');
         b.innerHTML = `
           <div class="b-ic">${OS.icons.warn}</div>
           <h3>Сайт не открывается во встроенном окне</h3>
-          <p>Многие сайты запрещают встраивание (X-Frame-Options). Это ограничение браузера, а не Hiko OS.</p>
-          <button class="ui-btn primary">Открыть в новой вкладке</button>`;
-        b.querySelector('button').addEventListener('click', () => window.open(url, '_blank'));
+          <p>Многие сайты запрещают встраивание (X-Frame-Options). Это ограничение браузера, а не Hiko OS.${vpnOff ? '<br><br>Попробуй включить «Обход блокировок» в Центре управления — иностранные сайты пойдут через модуль обхода.' : ''}</p>
+          <div style="display:flex;gap:8px">
+            ${vpnOff ? '<button class="ui-btn br-vpn">Включить обход</button>' : ''}
+            <button class="ui-btn primary br-newtab">Открыть в новой вкладке</button>
+          </div>`;
+        b.querySelector('.br-newtab').addEventListener('click', () => window.open(url, '_blank'));
+        const vb = b.querySelector('.br-vpn');
+        if (vb) vb.addEventListener('click', async () => { await OS.net.setOn(true); show(current()); });
         stage.appendChild(b);
       }
 
@@ -8750,10 +9160,13 @@ img { -webkit-user-drag: none; }
     if (!code.trim()) { OS.dialog.alert('Установщик', 'Файл пустой.'); return false; }
     if (code.length > 400 * 1024) { OS.dialog.alert('Установщик', 'Файл больше 400 КБ — слишком крупный для приложения.'); return false; }
     const meta = metaOf(code);
-    const looksLikeApp = code.includes('OS.registerApp') || code.includes('OS.widgets.register');
+    const isNet = code.includes('OS.net.registerProvider');
+    const isVoice = code.includes('OS.assistant.registerProvider');
+    const looksLikeApp = code.includes('OS.registerApp') || code.includes('OS.widgets.register') || isNet || isVoice;
+    const kind = isNet ? 'модуль обхода блокировок' : isVoice ? 'голосовой ассистент' : null;
     const ok = await OS.dialog.confirm(
-      'Установить приложение?',
-      `${meta.name ? `«${meta.name}»` : fileName}${sourceUrl ? `\nисточник: ${sourceUrl.slice(0, 60)}` : ''}\n\n⚠ Код получит полный доступ к Hiko OS (файлы, настройки). Устанавливай только то, чему доверяешь.${looksLikeApp ? '' : '\n\nВнимание: в коде не видно OS.registerApp — возможно, это не приложение Hiko OS.'}`,
+      isNet ? 'Установить модуль обхода?' : isVoice ? 'Установить ассистента?' : 'Установить приложение?',
+      `${meta.name ? `«${meta.name}»` : fileName}${kind ? `\nтип: ${kind}` : ''}${sourceUrl ? `\nисточник: ${sourceUrl.slice(0, 60)}` : ''}\n\n⚠ Код получит полный доступ к Hiko OS (файлы, настройки, сеть). Устанавливай только то, чему доверяешь.${looksLikeApp ? (isNet ? '\n\nПосле установки переключатель появится в Центре управления.' : '') : '\n\nВнимание: в коде не видно точки подключения Hiko OS — возможно, это не модуль Hiko.'}`,
       { okLabel: 'Установить', danger: !looksLikeApp }
     );
     if (!ok) return false;
@@ -8858,7 +9271,7 @@ img { -webkit-user-drag: none; }
             <div><div class="nm">${esc(meta.name || f.name)}</div>
               <div class="meta">${esc(f.name)} · ${OS.fmtBytes(f.size)}${src ? ' · из интернета' : ''}</div></div>
             <span class="sp"></span>
-            ${meta.id ? `<button class="ui-btn ins-open">Открыть</button>` : ''}
+            ${app ? `<button class="ui-btn ins-open">Открыть</button>` : ''}
             <button class="ui-btn danger ins-del">Удалить</button>
           </div>`;
         }).join('');
@@ -8989,6 +9402,16 @@ img { -webkit-user-drag: none; }
     },
   });
 
+  OS.assistant.registerCommand('vpn', {
+    desc: 'Обход блокировок (VPN)', params: '{ on: true|false }',
+    run({ on }) {
+      if (!OS.net) throw new Error('Сеть недоступна');
+      if (!OS.net.providers().length) return 'Нет модуля обхода. Открой Центр управления → «Обход блокировок» и поставь модуль (можно демо).';
+      OS.net.setOn(!!on);
+      return on ? 'Включаю обход блокировок 🌐' : 'Выключаю обход';
+    },
+  });
+
   OS.assistant.registerCommand('timer', {
     desc: 'Таймер / напоминание', params: '{ minutes?, seconds?, note? }',
     run({ minutes, seconds, note }) {
@@ -9102,6 +9525,9 @@ img { -webkit-user-drag: none; }
         (m = q.match(/^(?:гугл|google)[:,]?\s+(.+)/))) {
       return ctx.run('google', { query: m[1] });
     }
+    if (/(включ|вкл|вруб|запусти|подключ|дай)[а-яё]*\s+(обход|впн|vpn|блокиров)/.test(q)) return ctx.run('vpn', { on: true });
+    if (/(выключ|выкл|откл|убер|стоп|заглуш)[а-яё]*\s+(обход|впн|vpn|блокиров)/.test(q)) return ctx.run('vpn', { on: false });
+
     if ((m = q.match(/открой\s+(?:сайт|страницу)\s+(\S+)/))) return ctx.run('open-url', { url: m[1] });
     if ((m = q.match(/^(?:открой|запусти|включи)\s+(.+)/))) {
       for (const [re, url, name] of SITE_MAP) if (re.test(m[1])) { ctx.run('open-url', { url }); return 'Открываю ' + name; }
@@ -9333,6 +9759,7 @@ img { -webkit-user-drag: none; }
     if (!m) return;
     const after = t.slice(m.index + m[0].length).replace(/^[\s,!.:—-]+/, '').replace(/^(привет|здравствуй)[\s,!.]*/i, '').trim();
     busy = true;
+    if (OS.aura) OS.aura.show();
     try {
       chime();
       if (!after) {
@@ -9345,6 +9772,7 @@ img { -webkit-user-drag: none; }
     } catch (e) {
       OS.notify({ title: 'Ави', body: '⚠ ' + (e.message || e), appId: 'avi' });
     } finally {
+      if (OS.aura) OS.aura.pulse(1400);
       setTimeout(() => { busy = false; }, 600);
     }
   }

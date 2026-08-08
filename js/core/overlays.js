@@ -184,81 +184,180 @@
     setTimeout(() => n.remove(), 190);
   }
 
-  /* ==================== CONTROL CENTER ==================== */
+  /* ==================== ЦЕНТР УПРАВЛЕНИЯ (боковая панель справа) ==================== */
+
+  const SPK = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 14 38 L 34 38 L 56 20 L 56 80 L 34 62 L 14 62 Z" fill="currentColor"/><path d="M 68 36 C 76 44 76 56 68 64 M 76 28 C 90 42 90 58 76 72" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></svg>`;
+
+  const MON_FULL_CC = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  const greetWord = (h) => h < 5 ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
+
+  function calendarHTML() {
+    const d = new Date();
+    const year = d.getFullYear(), month = d.getMonth(), today = d.getDate();
+    const firstDow = (new Date(year, month, 1).getDay() + 6) % 7;
+    const daysIn = new Date(year, month + 1, 0).getDate();
+    const daysPrev = new Date(year, month, 0).getDate();
+    let cells = '';
+    ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'].forEach(dw => cells += `<div class="cal-dow">${dw}</div>`);
+    for (let i = 0; i < firstDow; i++) cells += `<div class="cal-day other">${daysPrev - firstDow + 1 + i}</div>`;
+    for (let day = 1; day <= daysIn; day++) cells += `<div class="cal-day ${day === today ? 'today' : ''}">${day}</div>`;
+    const tail = (7 - (firstDow + daysIn) % 7) % 7;
+    for (let i = 1; i <= tail; i++) cells += `<div class="cal-day other">${i}</div>`;
+    return `<div class="cal-head"><span class="cal-month">${MON_FULL_CC[month]}</span><span>${year}</span></div><div class="cal-grid">${cells}</div>`;
+  }
+  function notifHTML() {
+    const notifs = OS.getNotifications();
+    return `<div class="notif-head"><span>Уведомления</span>${notifs.length ? '<span class="notif-clear">Очистить</span>' : ''}</div>
+      <div class="notif-list">${notifs.length ? notifs.map(n => `
+        <div class="notif-item"><div class="t-icon">${appIconOf(n.appId)}</div>
+          <div><div class="t-title">${esc(n.title)}</div><div class="t-body">${esc(n.body)}</div></div></div>`).join('')
+        : `<div class="notif-empty">Нет новых уведомлений</div>`}</div>`;
+  }
 
   let ccEl = null;
+  let ccTick = null;
+
   function ccToggle() {
     if (ccEl) { ccClose(); return; }
     closeAllPanels();
     ccEl = el('div');
     ccEl.id = 'control-center';
-    const s = OS.settings;
-    const themeNow = document.documentElement.getAttribute('data-theme');
-    ccEl.innerHTML = `
-      <div class="cc-module cc-span2">
-        <div class="cc-toggle-row" data-t="wifi">
-          <div class="cc-toggle-icon ${s.get('wifi') ? 'on' : ''}">${OS.icons.wifi}</div>
-          <div><div class="cc-t-name">Wi-Fi</div><div class="cc-t-state">${s.get('wifi') ? 'Hiko_5G' : 'Выкл.'}</div></div>
-        </div>
-        <div class="cc-toggle-row" data-t="bluetooth">
-          <div class="cc-toggle-icon ${s.get('bluetooth') ? 'on' : ''}">${OS.icons.bluetooth}</div>
-          <div><div class="cc-t-name">Bluetooth</div><div class="cc-t-state">${s.get('bluetooth') ? 'Вкл.' : 'Выкл.'}</div></div>
-        </div>
-        <div class="cc-toggle-row" data-t="dnd">
-          <div class="cc-toggle-icon ${s.get('dnd') ? 'on' : ''}">${OS.icons.moon}</div>
-          <div><div class="cc-t-name">Не беспокоить</div><div class="cc-t-state">${s.get('dnd') ? 'Вкл.' : 'Выкл.'}</div></div>
-        </div>
-      </div>
-      <div class="cc-module" data-t="theme" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
-        <div class="cc-toggle-icon ${themeNow === 'dark' ? 'on' : ''}" style="width:38px;height:38px;">${themeNow === 'dark' ? OS.icons.moon : OS.icons.sun}</div>
-        <div class="cc-t-name" style="font-size:12px;">${themeNow === 'dark' ? 'Тёмная тема' : 'Светлая тема'}</div>
-      </div>
-      <div class="cc-module" data-t="nightlight" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
-        <div class="cc-toggle-icon ${s.get('nightLight') ? 'on' : ''}" style="width:38px;height:38px;">${OS.icons.sun}</div>
-        <div class="cc-t-name" style="font-size:12px;">Тёплый свет</div>
-      </div>
-      <div class="cc-module cc-span2">
-        <div class="cc-label">Яркость</div>
-        <input class="ui-slider" data-s="brightness" type="range" min="40" max="100" value="${Math.round(s.get('brightness') * 100)}">
-      </div>
-      <div class="cc-module cc-span2">
-        <div class="cc-label">Звук</div>
-        <input class="ui-slider" data-s="volume" type="range" min="0" max="100" value="${s.get('volume')}">
-      </div>`;
     document.body.appendChild(ccEl);
-
-    ccEl.querySelectorAll('[data-t]').forEach(row => {
-      row.addEventListener('click', () => {
-        const t = row.dataset.t;
-        if (t === 'theme') {
-          const cur = document.documentElement.getAttribute('data-theme');
-          OS.settings.set('theme', cur === 'dark' ? 'light' : 'dark');
-        } else if (t === 'nightlight') {
-          OS.settings.set('nightLight', !s.get('nightLight'));
-        } else {
-          OS.settings.set(t, !s.get(t));
-        }
-        if (ccEl) { ccEl.remove(); ccEl = null; document.removeEventListener('pointerdown', ccOutside, true); }
-        ccToggle(); // перерисовать без анимации закрытия
-      });
-    });
-    ccEl.querySelector('[data-s="brightness"]').addEventListener('input', (e) => {
-      OS.settings.set('brightness', (+e.target.value) / 100);
-    });
-    ccEl.querySelector('[data-s="volume"]').addEventListener('change', (e) => {
-      OS.settings.set('volume', +e.target.value);
-      OS.beep(660, .1);
-    });
+    renderCC();
+    startCCTick();
     setTimeout(() => document.addEventListener('pointerdown', ccOutside, true), 0);
   }
+
+  function renderCC() {
+    if (!ccEl) return;
+    const s = OS.settings;
+    const theme = document.documentElement.getAttribute('data-theme');
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2, '0'), mm = String(d.getMinutes()).padStart(2, '0');
+    const vpnOn = OS.net ? OS.net.isOn() : false;
+    const provs = OS.net ? OS.net.providers() : [];
+    const vp = provs.length ? (provs.find(x => x.id === OS.net.active()) || provs[0]) : null;
+
+    const tile = (t, on, ic, nm, st) =>
+      `<div class="cc-tile ${on ? 'on' : ''}" data-t="${t}"><div class="ic">${ic}</div>
+        <div class="tx"><div class="nm">${nm}</div><div class="st">${st}</div></div></div>`;
+
+    ccEl.innerHTML = `
+      <div class="cc-header">
+        <div><div class="cc-clock">${hh}:${mm}</div>
+          <div class="cc-sub">${esc(d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }))}</div></div>
+        <div class="cc-greet">${esc(greetWord(d.getHours()))}${s.get('userName') ? '<br>' + esc(s.get('userName')) : ''}</div>
+      </div>
+
+      <div class="cc-grid">
+        ${tile('wifi', s.get('wifi'), OS.icons.wifi, 'Wi-Fi', s.get('wifi') ? 'Hiko_5G' : 'Выкл.')}
+        ${tile('bluetooth', s.get('bluetooth'), OS.icons.bluetooth, 'Bluetooth', s.get('bluetooth') ? 'Вкл.' : 'Выкл.')}
+        ${tile('dnd', s.get('dnd'), OS.icons.moon, 'Не беспокоить', s.get('dnd') ? 'Вкл.' : 'Выкл.')}
+        ${tile('nightlight', s.get('nightLight'), OS.icons.sun, 'Тёплый свет', s.get('nightLight') ? 'Вкл.' : 'Выкл.')}
+        ${tile('theme', theme === 'dark', theme === 'dark' ? OS.icons.moon : OS.icons.sun, 'Тема', theme === 'dark' ? 'Тёмная' : 'Светлая')}
+        ${tile('edge', s.get('ccEdgeReveal'), OS.icons.cc, 'Панель у края', s.get('ccEdgeReveal') ? 'Вкл.' : 'Выкл.')}
+      </div>
+
+      <div class="cc-vpn ${vpnOn ? 'on' : ''}">
+        <div class="ic">${OS.icons.globe}</div>
+        <div class="tx"><div class="nm">Обход блокировок</div>
+          <div class="st">${vp ? (vpnOn ? 'Включён · ' + esc(vp.name) : 'Готов · ' + esc(vp.name)) : 'Нет модуля обхода'}</div></div>
+        ${vp ? `<div class="ui-switch ${vpnOn ? 'on' : ''}" data-vpn="1"></div>`
+             : `<button class="ui-btn cc-vpn-get">Модуль…</button>`}
+      </div>
+
+      <div class="cc-sliders">
+        <div class="cc-slider">${OS.icons.sun}<input class="ui-slider" data-s="brightness" type="range" min="40" max="100" value="${Math.round(s.get('brightness') * 100)}"></div>
+        <div class="cc-slider">${SPK}<input class="ui-slider" data-s="volume" type="range" min="0" max="100" value="${s.get('volume')}"></div>
+      </div>
+
+      <div class="cc-actions">
+        <div class="cc-act" data-a="spotlight">${OS.icons.search}<span>Поиск</span></div>
+        <div class="cc-act" data-a="mission">${OS.icons.mission}<span>Окна</span></div>
+        <div class="cc-act" data-a="assistant">${OS.icons.spark}<span>Ави</span></div>
+        <div class="cc-act" data-a="lock">${OS.icons.lock}<span>Замок</span></div>
+      </div>
+
+      <div class="cc-cal">${calendarHTML()}</div>
+      <div class="cc-notif">${notifHTML()}</div>`;
+
+    bindCC();
+  }
+
+  function bindCC() {
+    const s = OS.settings;
+    ccEl.querySelectorAll('.cc-tile[data-t]').forEach(row => row.addEventListener('click', () => {
+      const t = row.dataset.t;
+      if (t === 'theme') { const cur = document.documentElement.getAttribute('data-theme'); s.set('theme', cur === 'dark' ? 'light' : 'dark'); }
+      else if (t === 'nightlight') s.set('nightLight', !s.get('nightLight'));
+      else if (t === 'edge') s.set('ccEdgeReveal', !s.get('ccEdgeReveal'));
+      else s.set(t, !s.get(t));
+      renderCC();
+    }));
+    const sw = ccEl.querySelector('[data-vpn]');
+    if (sw) sw.addEventListener('click', async () => { await OS.net.toggle(); renderCC(); });
+    const getBtn = ccEl.querySelector('.cc-vpn-get');
+    if (getBtn) getBtn.addEventListener('click', ccVpnGet);
+    const br = ccEl.querySelector('[data-s="brightness"]');
+    if (br) br.addEventListener('input', (e) => s.set('brightness', (+e.target.value) / 100));
+    const vol = ccEl.querySelector('[data-s="volume"]');
+    if (vol) vol.addEventListener('change', (e) => { s.set('volume', +e.target.value); OS.beep(660, .1); });
+    ccEl.querySelectorAll('.cc-act[data-a]').forEach(a => a.addEventListener('click', () => {
+      const act = a.dataset.a;
+      ccClose();
+      if (act === 'spotlight') spotlightToggle();
+      else if (act === 'mission') OS.wm.missionToggle();
+      else if (act === 'assistant') OS.assistant.toggle();
+      else if (act === 'lock') OS.emit('session:lock');
+    }));
+    const clr = ccEl.querySelector('.notif-clear');
+    if (clr) clr.addEventListener('click', () => { OS.clearNotifications(); refreshNotif(); });
+  }
+
+  async function ccVpnGet() {
+    ccClose();
+    const demo = await OS.dialog.confirm('Модуль обхода',
+      'Скачай последнюю версию модуля обхода с GitHub и поставь её через Установщик («По ссылке…») — Hiko сам подхватит переключатель.\n\nИли поставить встроенный демо-модуль прямо сейчас, чтобы увидеть, как это работает?',
+      { okLabel: 'Поставить демо', cancelLabel: 'Открыть Установщик' });
+    if (demo) { OS.installer.installTrusted(OS.net.DEMO_CODE, 'obhod-demo.js'); }
+    else OS.launch('installer');
+  }
+
+  function refreshNotif() {
+    if (!ccEl) return;
+    const n = ccEl.querySelector('.cc-notif');
+    if (!n) return;
+    n.innerHTML = notifHTML();
+    const clr = n.querySelector('.notif-clear');
+    if (clr) clr.addEventListener('click', () => { OS.clearNotifications(); refreshNotif(); });
+  }
+
+  function startCCTick() {
+    stopCCTick();
+    ccTick = setInterval(() => {
+      if (!ccEl) { stopCCTick(); return; }
+      const d = new Date();
+      const c = ccEl.querySelector('.cc-clock');
+      if (c) c.textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }, 15000);
+  }
+  function stopCCTick() { if (ccTick) { clearInterval(ccTick); ccTick = null; } }
+
   function ccOutside(e) {
-    if (ccEl && !ccEl.contains(e.target) && !e.target.closest('#mb-cc')) ccClose();
+    if (ccEl && !ccEl.contains(e.target) &&
+        !e.target.closest('#mb-cc') && !e.target.closest('#mb-clock') && !e.target.closest('#mb-vpn')) ccClose();
   }
   function ccClose() {
+    stopCCTick();
     animateOut(ccEl);
     ccEl = null;
     document.removeEventListener('pointerdown', ccOutside, true);
   }
+
+  OS.on('net:providers', () => { if (ccEl) renderCC(); });
+  OS.on('net:state', () => { if (ccEl) renderCC(); });
+  OS.on('os:notify', refreshNotif);
+  OS.on('os:notify-cleared', refreshNotif);
 
   /* ==================== ЧАСЫ / КАЛЕНДАРЬ / УВЕДОМЛЕНИЯ ==================== */
 
@@ -339,7 +438,7 @@
   OS.on('spotlight:toggle', spotlightToggle);
   OS.on('launchpad:toggle', launchpadToggle);
   OS.on('cc:toggle', ccToggle);
-  OS.on('clockpanel:toggle', clockPanelToggle);
+  OS.on('clockpanel:toggle', ccToggle); // клик по часам открывает единый Центр управления
 
   document.addEventListener('keydown', (e) => {
     if (e.altKey && e.code === 'Space') {
@@ -377,6 +476,20 @@
       cornerAt = performance.now();
       cornerArmed = false;
       fn();
+    }
+  });
+
+  /* ==================== ОТКРЫТИЕ ПАНЕЛИ НАВЕДЕНИЕМ НА ПРАВЫЙ КРАЙ ==================== */
+
+  let edgeT = null;
+  document.addEventListener('mousemove', (e) => {
+    if (!OS.settings.get('ccEdgeReveal', true)) { if (edgeT) { clearTimeout(edgeT); edgeT = null; } return; }
+    const atEdge = e.clientX >= innerWidth - 1;
+    const band = e.clientY > 56 && e.clientY < innerHeight - 56; // не мешаем углам
+    if (atEdge && band && !ccEl && !edgeT && !e.buttons) {
+      edgeT = setTimeout(() => { edgeT = null; if (!ccEl) ccToggle(); }, 220);
+    } else if (!atEdge && edgeT) {
+      clearTimeout(edgeT); edgeT = null;
     }
   });
 

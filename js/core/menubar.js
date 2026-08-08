@@ -109,8 +109,9 @@
       { id: 'mb-search', html: OS.icons.search, title: 'Поиск (Alt+Space)', click: () => OS.emit('spotlight:toggle') },
       { id: 'mb-mission', html: OS.icons.mission, title: 'Обзор окон (F3)', click: () => OS.wm.missionToggle() },
       { id: 'mb-wifi', html: OS.icons.wifi, title: 'Wi-Fi', click: (e, n) => toggleQuick(n, 'wifi') },
-      { id: 'mb-battery', html: `<span style="font-size:11.5px;font-weight:600;">100%</span>` + OS.icons.battery, title: 'Аккумулятор' },
-      { id: 'mb-cc', html: OS.icons.cc, title: 'Быстрые настройки', click: () => OS.emit('cc:toggle') },
+      { id: 'mb-vpn', html: OS.icons.globe, title: 'Обход блокировок включён', click: () => OS.emit('cc:toggle') },
+      { id: 'mb-battery', html: `<span style="font-size:11.5px;font-weight:600;">100%</span>` + OS.icons.battery, title: 'Аккумулятор', click: () => OS.emit('cc:toggle') },
+      { id: 'mb-cc', html: OS.icons.cc, title: 'Центр управления', click: () => OS.emit('cc:toggle') },
     ];
     right.forEach(cfg => {
       const item = el('div', 'mb-item', cfg.html);
@@ -120,6 +121,9 @@
       bar.appendChild(item);
     });
     updateWifiIcon();
+    updateVpnIndicator();
+    setupBattery();
+    applyBatteryUI();
 
     // — часы
     const clock = el('div', 'mb-item mb-clock');
@@ -138,6 +142,39 @@
     if (w) w.style.opacity = OS.settings.get('wifi') ? '1' : '.35';
   }
   OS.on('settings:change', ({ key }) => { if (key === 'wifi') updateWifiIcon(); });
+
+  /* --- индикатор обхода блокировок (показывается только когда включён) --- */
+  function updateVpnIndicator() {
+    const v = document.getElementById('mb-vpn');
+    if (!v) return;
+    const on = OS.net ? OS.net.isOn() : false;
+    v.style.display = on ? '' : 'none';
+    v.classList.toggle('on', on);
+  }
+  OS.on('net:state', updateVpnIndicator);
+  OS.on('net:providers', updateVpnIndicator);
+
+  /* --- живой аккумулятор (Battery API, с запасным «100%») --- */
+  let batteryReady = false;
+  let batteryState = null; // { pct, charging }
+  function applyBatteryUI() {
+    const b = document.getElementById('mb-battery');
+    if (!b) return;
+    if (!batteryState) return; // остаётся дефолтный «100%»
+    const bolt = batteryState.charging ? `<span class="mb-bolt">${OS.icons.bolt}</span>` : '';
+    b.innerHTML = `<span style="font-size:11.5px;font-weight:600;">${batteryState.pct}%</span>${bolt}${OS.icons.battery}`;
+    b.title = 'Аккумулятор' + (batteryState.charging ? ' · заряжается' : '');
+  }
+  function setupBattery() {
+    if (batteryReady || !navigator.getBattery) return;
+    batteryReady = true;
+    navigator.getBattery().then(bat => {
+      const upd = () => { batteryState = { pct: Math.round(bat.level * 100), charging: bat.charging }; applyBatteryUI(); };
+      bat.addEventListener('levelchange', upd);
+      bat.addEventListener('chargingchange', upd);
+      upd();
+    }).catch(() => { /* нет доступа — оставим 100% */ });
+  }
 
   const DOW = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
   const MON = ['янв.', 'февр.', 'мар.', 'апр.', 'мая', 'июн.', 'июл.', 'авг.', 'сент.', 'окт.', 'нояб.', 'дек.'];

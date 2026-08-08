@@ -164,6 +164,12 @@
       u.volume = OS.settings.get('volume', 70) / 100;
       const ru = speechSynthesis.getVoices().find(v => v.lang && v.lang.startsWith('ru'));
       if (ru) u.voice = ru;
+      if (OS.aura) {
+        const est = Math.min(14000, 1200 + String(text).length * 70);
+        OS.aura.pulse(est);
+        u.onend = () => { if (OS.aura) OS.aura.pulse(350); };
+        u.onerror = () => { if (OS.aura) OS.aura.hide(); };
+      }
       speechSynthesis.speak(u);
       return true;
     } catch (e) { return false; }
@@ -331,12 +337,15 @@
     const mic = panel.querySelector('.as-mic');
     mic.addEventListener('click', async () => {
       mic.classList.add('listening');
+      if (OS.aura) OS.aura.show();
       try {
         const heard = provider && provider.listen ? await provider.listen() : await systemListen();
         mic.classList.remove('listening');
+        if (OS.aura) OS.aura.pulse(400);
         if (heard) submit(heard);
       } catch (e) {
         mic.classList.remove('listening');
+        if (OS.aura) OS.aura.pulse(300);
         addMsg('bot', '🎙 ' + (e.message || 'Не получилось послушать'));
       }
     });

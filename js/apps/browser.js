@@ -130,17 +130,24 @@
           if (blocked) blocked.remove();
         });
         loadTimer = setTimeout(() => { if (!loaded) showBlocked(target); }, 4500);
-        iframe.src = target;
+        // если включён «обход блокировок» — маршрутизируем через модуль
+        iframe.src = OS.net ? OS.net.proxify(target) : target;
       }
 
       function showBlocked(url) {
+        const vpnOff = OS.net && !OS.net.isOn() && OS.net.providers().length;
         const b = el('div', 'br-blocked');
         b.innerHTML = `
           <div class="b-ic">${OS.icons.warn}</div>
           <h3>Сайт не открывается во встроенном окне</h3>
-          <p>Многие сайты запрещают встраивание (X-Frame-Options). Это ограничение браузера, а не Hiko OS.</p>
-          <button class="ui-btn primary">Открыть в новой вкладке</button>`;
-        b.querySelector('button').addEventListener('click', () => window.open(url, '_blank'));
+          <p>Многие сайты запрещают встраивание (X-Frame-Options). Это ограничение браузера, а не Hiko OS.${vpnOff ? '<br><br>Попробуй включить «Обход блокировок» в Центре управления — иностранные сайты пойдут через модуль обхода.' : ''}</p>
+          <div style="display:flex;gap:8px">
+            ${vpnOff ? '<button class="ui-btn br-vpn">Включить обход</button>' : ''}
+            <button class="ui-btn primary br-newtab">Открыть в новой вкладке</button>
+          </div>`;
+        b.querySelector('.br-newtab').addEventListener('click', () => window.open(url, '_blank'));
+        const vb = b.querySelector('.br-vpn');
+        if (vb) vb.addEventListener('click', async () => { await OS.net.setOn(true); show(current()); });
         stage.appendChild(b);
       }
 

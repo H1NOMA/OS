@@ -94,10 +94,13 @@
     if (!code.trim()) { OS.dialog.alert('Установщик', 'Файл пустой.'); return false; }
     if (code.length > 400 * 1024) { OS.dialog.alert('Установщик', 'Файл больше 400 КБ — слишком крупный для приложения.'); return false; }
     const meta = metaOf(code);
-    const looksLikeApp = code.includes('OS.registerApp') || code.includes('OS.widgets.register');
+    const isNet = code.includes('OS.net.registerProvider');
+    const isVoice = code.includes('OS.assistant.registerProvider');
+    const looksLikeApp = code.includes('OS.registerApp') || code.includes('OS.widgets.register') || isNet || isVoice;
+    const kind = isNet ? 'модуль обхода блокировок' : isVoice ? 'голосовой ассистент' : null;
     const ok = await OS.dialog.confirm(
-      'Установить приложение?',
-      `${meta.name ? `«${meta.name}»` : fileName}${sourceUrl ? `\nисточник: ${sourceUrl.slice(0, 60)}` : ''}\n\n⚠ Код получит полный доступ к Hiko OS (файлы, настройки). Устанавливай только то, чему доверяешь.${looksLikeApp ? '' : '\n\nВнимание: в коде не видно OS.registerApp — возможно, это не приложение Hiko OS.'}`,
+      isNet ? 'Установить модуль обхода?' : isVoice ? 'Установить ассистента?' : 'Установить приложение?',
+      `${meta.name ? `«${meta.name}»` : fileName}${kind ? `\nтип: ${kind}` : ''}${sourceUrl ? `\nисточник: ${sourceUrl.slice(0, 60)}` : ''}\n\n⚠ Код получит полный доступ к Hiko OS (файлы, настройки, сеть). Устанавливай только то, чему доверяешь.${looksLikeApp ? (isNet ? '\n\nПосле установки переключатель появится в Центре управления.' : '') : '\n\nВнимание: в коде не видно точки подключения Hiko OS — возможно, это не модуль Hiko.'}`,
       { okLabel: 'Установить', danger: !looksLikeApp }
     );
     if (!ok) return false;
@@ -202,7 +205,7 @@
             <div><div class="nm">${esc(meta.name || f.name)}</div>
               <div class="meta">${esc(f.name)} · ${OS.fmtBytes(f.size)}${src ? ' · из интернета' : ''}</div></div>
             <span class="sp"></span>
-            ${meta.id ? `<button class="ui-btn ins-open">Открыть</button>` : ''}
+            ${app ? `<button class="ui-btn ins-open">Открыть</button>` : ''}
             <button class="ui-btn danger ins-del">Удалить</button>
           </div>`;
         }).join('');

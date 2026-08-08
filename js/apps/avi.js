@@ -65,6 +65,16 @@
     },
   });
 
+  OS.assistant.registerCommand('vpn', {
+    desc: 'Обход блокировок (VPN)', params: '{ on: true|false }',
+    run({ on }) {
+      if (!OS.net) throw new Error('Сеть недоступна');
+      if (!OS.net.providers().length) return 'Нет модуля обхода. Открой Центр управления → «Обход блокировок» и поставь модуль (можно демо).';
+      OS.net.setOn(!!on);
+      return on ? 'Включаю обход блокировок 🌐' : 'Выключаю обход';
+    },
+  });
+
   OS.assistant.registerCommand('timer', {
     desc: 'Таймер / напоминание', params: '{ minutes?, seconds?, note? }',
     run({ minutes, seconds, note }) {
@@ -178,6 +188,9 @@
         (m = q.match(/^(?:гугл|google)[:,]?\s+(.+)/))) {
       return ctx.run('google', { query: m[1] });
     }
+    if (/(включ|вкл|вруб|запусти|подключ|дай)[а-яё]*\s+(обход|впн|vpn|блокиров)/.test(q)) return ctx.run('vpn', { on: true });
+    if (/(выключ|выкл|откл|убер|стоп|заглуш)[а-яё]*\s+(обход|впн|vpn|блокиров)/.test(q)) return ctx.run('vpn', { on: false });
+
     if ((m = q.match(/открой\s+(?:сайт|страницу)\s+(\S+)/))) return ctx.run('open-url', { url: m[1] });
     if ((m = q.match(/^(?:открой|запусти|включи)\s+(.+)/))) {
       for (const [re, url, name] of SITE_MAP) if (re.test(m[1])) { ctx.run('open-url', { url }); return 'Открываю ' + name; }
@@ -409,6 +422,7 @@
     if (!m) return;
     const after = t.slice(m.index + m[0].length).replace(/^[\s,!.:—-]+/, '').replace(/^(привет|здравствуй)[\s,!.]*/i, '').trim();
     busy = true;
+    if (OS.aura) OS.aura.show();
     try {
       chime();
       if (!after) {
@@ -421,6 +435,7 @@
     } catch (e) {
       OS.notify({ title: 'Ави', body: '⚠ ' + (e.message || e), appId: 'avi' });
     } finally {
+      if (OS.aura) OS.aura.pulse(1400);
       setTimeout(() => { busy = false; }, 600);
     }
   }

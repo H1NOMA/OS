@@ -684,12 +684,16 @@ img { -webkit-user-drag: none; }
    CONTROL CENTER
    ============================================================ */
 
+/* Центр управления — боковая панель, выезжает справа во всю высоту */
 #control-center {
   position: fixed;
-  top: calc(var(--menubar-h) + 8px);
-  right: 10px;
-  width: 330px;
-  padding: 12px;
+  top: calc(var(--menubar-h) + 6px);
+  right: 8px;
+  bottom: 8px;
+  width: 344px;
+  max-width: calc(100vw - 16px);
+  padding: 14px;
+  overflow-y: auto;
   background: var(--glass-strong);
   backdrop-filter: blur(50px) saturate(180%);
   -webkit-backdrop-filter: blur(50px) saturate(180%);
@@ -697,42 +701,84 @@ img { -webkit-user-drag: none; }
   border-radius: var(--r-panel);
   box-shadow: var(--shadow-panel);
   z-index: 9200;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  animation: menu-in .16s var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: cc-in .28s var(--ease-out);
   font-size: 13px;
 }
-.cc-module {
-  background: var(--ctl-bg);
-  border-radius: 13px;
-  padding: 11px;
+@keyframes cc-in { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
+#control-center.panel-out { transform: translateX(26px) !important; opacity: 0 !important; }
+#control-center::-webkit-scrollbar { width: 8px; }
+#control-center::-webkit-scrollbar-thumb { background: var(--ctl-bg-hover); border-radius: 8px; }
+
+.cc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 2px 4px 0; }
+.cc-clock { font-size: 34px; font-weight: 800; letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums; }
+.cc-sub { font-size: 12.5px; color: var(--text-2); margin-top: 4px; text-transform: capitalize; }
+.cc-greet { font-size: 12.5px; color: var(--accent); font-weight: 700; text-align: right; line-height: 1.35; }
+
+.cc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cc-tile {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 11px; border-radius: 14px;
+  background: var(--ctl-bg); cursor: default;
+  transition: background .15s;
+  min-width: 0;
 }
-.cc-span2 { grid-column: span 2; }
-.cc-toggle-row {
-  display: flex; align-items: center;
-  gap: 10px;
-  padding: 5px 0;
-}
-.cc-toggle-icon {
-  width: 30px; height: 30px;
-  flex: none;
-  border-radius: 50%;
+.cc-tile:hover { background: var(--ctl-bg-hover); }
+.cc-tile .ic {
+  width: 32px; height: 32px; flex: none; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  background: var(--ctl-bg-hover);
-  color: var(--text-2);
+  background: var(--ctl-bg-hover); color: var(--text-2);
   transition: background .2s, color .2s;
 }
-.cc-toggle-icon.on { background: var(--accent); color: var(--on-accent); }
-.cc-toggle-icon svg { width: 16px; height: 16px; }
-.cc-toggle-row .cc-t-name { font-weight: 600; }
-.cc-toggle-row .cc-t-state { font-size: 11.5px; color: var(--text-2); }
-.cc-label {
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text);
+.cc-tile .ic svg { width: 17px; height: 17px; }
+.cc-tile.on .ic { background: var(--accent); color: var(--on-accent); }
+.cc-tile .tx { min-width: 0; }
+.cc-tile .nm { font-weight: 600; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-tile .st { font-size: 11px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.cc-vpn {
+  display: flex; align-items: center; gap: 11px;
+  padding: 12px 13px; border-radius: 15px;
+  background: var(--ctl-bg);
+  transition: box-shadow .2s, background .2s;
 }
+.cc-vpn.on { box-shadow: inset 0 0 0 1.5px var(--accent); background: var(--accent-soft); }
+.cc-vpn .ic {
+  width: 36px; height: 36px; flex: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--ctl-bg-hover); color: var(--text-2);
+}
+.cc-vpn .ic svg { width: 20px; height: 20px; }
+.cc-vpn.on .ic { background: var(--accent); color: var(--on-accent); }
+.cc-vpn .tx { flex: 1; min-width: 0; }
+.cc-vpn .nm { font-weight: 700; font-size: 13px; }
+.cc-vpn .st { font-size: 11.5px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-vpn .cc-vpn-get { flex: none; padding: 6px 12px; }
+
+.cc-sliders { display: flex; flex-direction: column; gap: 6px; }
+.cc-slider { display: flex; align-items: center; gap: 11px; padding: 4px 4px; }
+.cc-slider > svg { width: 17px; height: 17px; flex: none; color: var(--text-2); }
+.cc-slider .ui-slider { flex: 1; }
+
+.cc-actions { display: flex; gap: 8px; }
+.cc-act {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 11px 4px; border-radius: 13px; background: var(--ctl-bg); cursor: default;
+  transition: background .15s;
+}
+.cc-act:hover { background: var(--ctl-bg-hover); }
+.cc-act svg { width: 18px; height: 18px; color: var(--text); }
+.cc-act span { font-size: 11px; color: var(--text-2); }
+
+.cc-cal { background: var(--ctl-bg); border-radius: 14px; padding: 12px 13px; }
+.cc-notif .notif-head { margin-top: 2px; }
+
+.mb-item .mb-bolt { display: inline-flex; width: 8px; height: 13px; margin-right: 1px; }
+.mb-item .mb-bolt svg { width: 100% !important; height: 100% !important; color: #57e18a; opacity: 1; }
+#mb-vpn.on { color: var(--accent); }
+#mb-vpn.on svg { opacity: 1; }
 
 /* слайдер macOS-стиля */
 .ui-slider {
