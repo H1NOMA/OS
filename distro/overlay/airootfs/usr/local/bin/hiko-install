@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# ============================================================
+#  Установка Hiko OS на диск — с настоящим dual-boot.
+#  Ставит систему на ВЫБРАННЫЙ диск целиком и настраивает GRUB
+#  с os-prober: если Windows стоит на другом диске, он появится
+#  в загрузочном меню, и при включении ПК можно выбрать систему.
+#
+#  Запуск из live-режима:  sudo hiko-install
+# ============================================================
+set -euo pipefail
+
+RED=$'\e[31m'; GRN=$'\e[32m'; YEL=$'\e[33m'; CYA=$'\e[36m'; RST=$'\e[0m'
+die() { echo "${RED}Ошибка:${RST} $*" >&2; exit 1; }
+
+[[ $EUID -eq 0 ]] || die "запусти через sudo:  sudo hiko-install"
+[[ -f /opt/hiko/Hiko.html ]] || die "не найдена оболочка /opt/hiko/Hiko.html — запусти из live-образа Hiko."
+
+echo "${CYA}============================================${RST}"
+echo "${CYA}   Установка Hiko OS на диск${RST}"
+echo "${CYA}============================================${RST}"
+echo
+echo "Найденные диски:"
+lsblk -dpno NAME,SIZE,MODEL | grep -vE 'loop|/dev/sr' || true
+echo
+read -rp "На какой диск установить Hiko целиком (например /dev/sdb, /dev/nvme0n1)? " DISK
+[[ -b "$DISK" ]] || die "нет такого блочного устройства: $DISK"
+
+echo
+echo "${YEL}ВНИМАНИЕ:${RST} весь диск ${YEL}$DISK${RST} будет полностью стёрт."
+echo "Данные Windows на ДРУГИХ дисках не пострадают — они появятся в меню загрузки."
+read -rp "Чтобы подтвердить, впиши путь диска ещё раз: " CONFIRM
+[[ "$CONFIRM" == "$DISK" ]] || die "не совпало — установка отменена."
+
+ping -c1 -W3 archlinux.org >/dev/null 2>&1 || die "нет интернета (нужен для загрузки пакетов). Подключись к сети и повтори."
+
+if [[ -d /sys/firmware/efi ]]; then MODE=uefi; else MODE=bios; fi
+echo "Режим прошивки: ${GRN}$MODE${RST}"
+
+# имя раздела: nvme0n1 -> nvme0n1p1 ; sdb -> sdb1
+part() { case "$DISK" in *nvme*|*mmcblk*) echo "${DISK}p$1";; *) echo "${DISK}$1";; esac; }
+
+echo "==> Размечаю $DISK"
+wipefs -af "$DISK"
+sgdisk -Z "$DISK"
+if [[ "$MODE" == uefi ]]; then
+  sgdisk -n1:0:+512M -t1:ef00 -c1:HIKO_EFI  "$DISK"
+  sgdisk -n2:0:0     -t2:8300 -c2:HIKO_ROOT "$DISK"
+else
+  sgdisk -a1 -n1:0:+1M -t1:ef02 -c1:BIOS_BOOT "$DISK"   # GRUB на GPT/BIOS
+  sgdisk       -n2:0:0 -t2:8300 -c2:HIKO_ROOT "$DISK"
+fi
+partprobe "$DISK"; sleep 2
+
+ROOT_PART="$(part 2)"
+echo "==> Форматирую"
+mkfs.ext4 -F -L HIKO "$ROOT_PART"
+mount "$ROOT_PART" /mnt
+if [[ "$MODE" == uefi ]]; then
+  EFI_PART="$(part 1)"
+  mkfs.fat -F32 "$EFI_PART"
+  mkdir -p /mnt/boot
+  mount "$EFI_PART" /mnt/boot
+fi
+
+echo "==> Устанавливаю базовую систему и оболочку (может занять несколько минут)"
+pacstrap -K /mnt \
+  base linux linux-firmware sudo nano \
+  networkmanager iwd pipewire pipewire-pulse wireplumber \
+  chromium cage greetd seatd mesa vulkan-icd-loader \
+  noto-fonts noto-fonts-emoji noto-fonts-cjk ttf-dejavu \
+  grub efibootmgr os-prober
+
+genfstab -U /mnt >> /mnt/etc/fstab
+
+echo "==> Переношу оболочку Hiko"
+install -Dm644 /opt/hiko/Hiko.html          /mnt/opt/hiko/Hiko.html
+install -Dm755 /usr/local/bin/hiko-session  /mnt/usr/local/bin/hiko-session
+install -Dm755 /usr/local/bin/hiko-install  /mnt/usr/local/bin/hiko-install
+install -Dm644 /etc/greetd/config.toml      /mnt/etc/greetd/config.toml
+install -Dm644 /etc/sudoers.d/hiko          /mnt/etc/sudoers.d/hiko
+install -Dm644 /etc/os-release              /mnt/etc/os-release
+echo hiko > /mnt/etc/hostname
+
+echo "==> Настраиваю установленную систему"
+arch-chroot /mnt /bin/bash -euo pipefail <<CHROOT
+ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
+hwclock --systohc || true
+sed -i 's/^#\(en_US.UTF-8 UTF-8\)/\1/' /etc/locale.gen
+sed -i 's/^#\(ru_RU.UTF-8 UTF-8\)/\1/' /etc/locale.gen
+locale-gen
+echo 'LANG=ru_RU.UTF-8' > /etc/locale.conf
+
+useradd -m -u 1000 -U -G wheel,audio,video,input,network,seat,storage -s /bin/bash hiko
+printf 'hiko:hiko\n' | chpasswd
+printf 'root:hiko\n' | chpasswd
+install -d -o hiko -g hiko /home/hiko/.hiko
+
+systemctl enable NetworkManager seatd greetd
+systemctl set-default graphical.target
+
+# GRUB + dual-boot (os-prober находит Windows на других дисках)
+sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=.*/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
+grep -q '^GRUB_DISABLE_OS_PROBER' /etc/default/grub || echo 'GRUB_DISABLE_OS_PROBER=false' >> /etc/default/grub
+sed -i 's/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR="Hiko OS"/' /etc/default/grub
+if [[ -d /sys/firmware/efi ]]; then
+  grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="Hiko OS" --recheck
+else
+  grub-install --target=i386-pc --recheck "$DISK"
+fi
+grub-mkconfig -o /boot/grub/grub.cfg
+CHROOT
+
+echo "==> Завершаю"
+umount -R /mnt || true
+
+echo
+echo "${GRN}Готово!${RST} Перезагрузи компьютер и вынь установочную флешку."
+echo "В меню GRUB будут ${CYA}Hiko OS${RST} и (если найден) ${CYA}Windows${RST}."
+echo "Вход: hiko / hiko."

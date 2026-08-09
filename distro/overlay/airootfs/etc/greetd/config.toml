@@ -1,0 +1,9 @@
+# greetd — автоматический вход в оболочку Hiko при старте системы.
+# Без пароля: это личное устройство с единственным владельцем (как телефон).
+
+[terminal]
+vt = 1
+
+[default_session]
+command = "/usr/local/bin/hiko-session"
+user = "hiko"

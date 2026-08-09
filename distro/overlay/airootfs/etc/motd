@@ -1,0 +1,11 @@
+
+  Hiko OS — live-режим.
+
+  Оболочка запускается сама на весь экран (VT1).
+  Переключение на этот терминал: Ctrl+Alt+F2, обратно к Hiko: Ctrl+Alt+F1.
+
+  Установить Hiko на диск (рядом с Windows, через GRUB):
+      sudo hiko-install
+
+  Логин/пароль: hiko / hiko   (root / hiko)
+

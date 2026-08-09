@@ -1,0 +1,12 @@
+NAME="Hiko OS"
+PRETTY_NAME="Hiko OS 1.2 «Nova»"
+ID=hiko
+ID_LIKE=arch
+VERSION="1.2.0"
+VERSION_ID=1.2.0
+BUILD_ID=nova
+ANSI_COLOR="1;36"
+HOME_URL="https://github.com/h1noma/os"
+DOCUMENTATION_URL="https://github.com/h1noma/os"
+SUPPORT_URL="https://github.com/h1noma/os"
+LOGO=hiko

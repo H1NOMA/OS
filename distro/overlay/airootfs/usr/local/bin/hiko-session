@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# ============================================================
+#  Оболочка Hiko OS.
+#  cage — минимальный Wayland-компоновщик, показывающий одно
+#  приложение на весь экран (без панелей, рамок, курсора браузера).
+#  Внутри — Chromium в режиме приложения, открывающий саму систему Hiko.
+#  Никакого «браузера» пользователь не видит: это и есть рабочий стол.
+# ============================================================
+set -euo pipefail
+
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export XDG_SESSION_TYPE=wayland
+export MOZ_ENABLE_WAYLAND=1
+
+# Профиль Chromium = хранилище всей системы Hiko (файлы, настройки, виджеты).
+# Лежит в домашней папке владельца и переживает перезагрузки.
+PROFILE="${HOME}/.hiko/chromium"
+mkdir -p "$PROFILE"
+
+FLAGS=(
+  --kiosk
+  --app=file:///opt/hiko/Hiko.html
+  --ozone-platform=wayland
+  --user-data-dir="$PROFILE"
+  --no-first-run
+  --no-default-browser-check
+  --disable-translate
+  --disable-features=TranslateUI
+  --disable-pinch
+  --overscroll-history-navigation=0
+  --autoplay-policy=no-user-gesture-required
+  --use-fake-ui-for-media-stream   # микрофон для Ави без лишнего запроса
+  --start-fullscreen
+)
+
+# cage -s разрешает переключение на текстовые консоли (Ctrl+Alt+F2) —
+# нужно, чтобы можно было запустить установку на диск.
+exec cage -s -- chromium "${FLAGS[@]}"

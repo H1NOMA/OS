@@ -1,0 +1,40 @@
+# Пакеты, которые добавляет Hiko OS поверх базового профиля archiso.
+# (пустые строки и комментарии игнорируются сборщиком)
+
+# --- оболочка: Wayland-kiosk + движок ---
+cage
+chromium
+seatd
+
+# --- вход/сессия ---
+greetd
+
+# --- сеть (нужна для голоса Ави, погоды, обхода) ---
+networkmanager
+iwd
+
+# --- звук (синтез речи Ави, системные звуки) ---
+pipewire
+pipewire-pulse
+wireplumber
+
+# --- графика ---
+mesa
+vulkan-icd-loader
+
+# --- шрифты (в т.ч. эмодзи для иконок/уведомлений Hiko) ---
+noto-fonts
+noto-fonts-emoji
+noto-fonts-cjk
+ttf-dejavu
+
+# --- установка на диск (hiko-install) ---
+arch-install-scripts
+gptfdisk
+dosfstools
+e2fsprogs
+grub
+efibootmgr
+os-prober
+sudo
+nano
