@@ -186,10 +186,11 @@
       this.isMin = false;
       this.root.classList.remove('hidden');
       requestAnimationFrame(() => {
-        this.root.classList.add('minimizing');
+        // возврат из дока — с плавным замедлением (не тем же ускоряющим curve, что свёртывание)
+        this.root.classList.add('restoring');
         this.root.style.transform = '';
         this.root.style.opacity = '';
-        setTimeout(() => this.root.classList.remove('minimizing'), 330);
+        setTimeout(() => this.root.classList.remove('restoring'), 420);
       });
       this.focus();
       OS.emit('wm:restored', this);

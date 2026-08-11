@@ -133,25 +133,58 @@
   }
   function hideTip() { if (tipEl) { tipEl.remove(); tipEl = null; } }
 
-  /* --- магнификация --- */
+  /* --- магнификация (плавная, следует за курсором мгновенно) --- */
+  const RANGE = 150;      // радиус влияния курсора, px
+  const MAX_SCALE = 1.55; // масштаб иконки прямо под курсором
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
   function wireMagnify() {
-    const zone = document.getElementById('dock-zone');
-    zone.addEventListener('mousemove', (e) => {
-      if (!OS.settings.get('dockMagnify')) return;
+    let centers = [];   // [{ ic, cx }] — неискажённые центры иконок (cx устойчив к scale: origin bottom-center)
+    let raf = 0;
+    let lastX = 0;
+
+    const active = () => OS.settings.get('dockMagnify') && !reduceMotion.matches;
+
+    function computeCenters() {
       const icons = dockEl.querySelectorAll('.dock-item .dock-icon');
-      icons.forEach(ic => {
+      centers = Array.from(icons).map(ic => {
         const r = ic.getBoundingClientRect();
-        const cx = r.left + r.width / 2;
-        const dist = Math.abs(e.clientX - cx);
-        const range = 130;
-        const maxScale = 1.5;
-        const s = dist > range ? 1 : 1 + (maxScale - 1) * Math.cos((dist / range) * (Math.PI / 2));
-        ic.style.transform = `scale(${s.toFixed(3)}) translateY(${(-(s - 1) * 6).toFixed(1)}px)`;
+        return { ic, cx: r.left + r.width / 2 };
       });
+    }
+
+    function apply() {
+      raf = 0;
+      for (const { ic, cx } of centers) {
+        const dist = Math.abs(lastX - cx);
+        // косинусный колокол с чуть заострённым пиком — «как в macOS»
+        const s = dist > RANGE ? 1 : 1 + (MAX_SCALE - 1) * Math.pow(Math.cos((dist / RANGE) * (Math.PI / 2)), 1.7);
+        ic.style.transform = `translateY(${(-(s - 1) * 9).toFixed(1)}px) scale(${s.toFixed(3)})`;
+      }
+    }
+
+    dockEl.addEventListener('mouseenter', () => {
+      if (!active()) return;
+      computeCenters();
     });
-    zone.addEventListener('mouseleave', resetMagnify);
+    dockEl.addEventListener('mousemove', (e) => {
+      if (!active()) return;
+      // кеш центров устарел (док перерисовался) — пересчитать
+      if (centers.length !== dockEl.querySelectorAll('.dock-item .dock-icon').length) computeCenters();
+      lastX = e.clientX;
+      dockEl.classList.add('magnifying');           // мгновенное следование, без transition-лага
+      if (!raf) raf = requestAnimationFrame(apply);
+    });
+    dockEl.addEventListener('mouseleave', () => {
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      dockEl.classList.remove('magnifying');         // плавный возврат по CSS-transition
+      resetMagnify();
+      centers = [];
+    });
   }
+
   function resetMagnify() {
+    if (!dockEl) return;
     dockEl.querySelectorAll('.dock-item .dock-icon').forEach(ic => { ic.style.transform = ''; });
   }
 
